@@ -57,8 +57,6 @@
       <div class="space-y-3">
         @foreach ($cart->items as $it)
           <div class="grid grid-cols-12 items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
-
-            {{-- item info --}}
             <div class="col-span-12 md:col-span-6 flex items-center gap-4">
               <img
                 src="{{ \Illuminate\Support\Str::startsWith($it->image, 'data:image')
@@ -75,37 +73,22 @@
               </div>
             </div>
 
-            {{-- unit price --}}
             <div class="col-span-6 md:col-span-2 md:text-right text-gray-900 font-medium">
               ${{ number_format($it->price, 2) }}
             </div>
 
-            {{-- quantity controls --}}
             <div class="col-span-6 md:col-span-2 flex md:justify-center items-center gap-2">
               <form method="POST" action="{{ route('cart.update') }}" class="flex items-center gap-2">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $it->product_id }}">
 
                 <div class="flex overflow-hidden rounded-full border border-gray-300 bg-white shadow-sm">
-                  {{-- minus --}}
-                  <button
-                    type="submit"
-                    name="op"
-                    value="dec"
-                    class="px-4 py-2 leading-none select-none hover:bg-gray-50"
-                    aria-label="Decrease quantity">−</button>
+                  <button type="submit" name="op" value="dec" class="px-4 py-2 leading-none hover:bg-gray-50" aria-label="Decrease quantity">−</button>
 
-                  {{-- current qty --}}
                   <input type="number" min="1" name="quantity" value="{{ (int)$it->quantity }}"
                          class="w-16 border-x border-gray-300 text-center focus:border-slate-500 focus:ring-slate-500">
 
-                  {{-- plus --}}
-                  <button
-                    type="submit"
-                    name="op"
-                    value="inc"
-                    class="px-4 py-2 leading-none select-none hover:bg-gray-50"
-                    aria-label="Increase quantity">＋</button>
+                  <button type="submit" name="op" value="inc" class="px-4 py-2 leading-none hover:bg-gray-50" aria-label="Increase quantity">＋</button>
                 </div>
 
                 <button class="hidden md:inline-flex rounded-full bg-slate-900 px-3 py-1 text-white hover:bg-slate-700">
@@ -113,7 +96,6 @@
                 </button>
               </form>
 
-              {{-- remove --}}
               <form method="POST" action="{{ route('cart.remove') }}" class="hidden md:block">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $it->product_id }}">
@@ -121,12 +103,10 @@
               </form>
             </div>
 
-            {{-- line total --}}
             <div class="col-span-12 md:col-span-2 md:text-right font-semibold text-gray-900">
               ${{ number_format($it->total, 2) }}
             </div>
 
-            {{-- remove (mobile) --}}
             <div class="col-span-12 md:hidden flex justify-end">
               <form method="POST" action="{{ route('cart.remove') }}">
                 @csrf
@@ -140,44 +120,82 @@
 
       {{-- FOOTER SUMMARY --}}
       <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {{-- Promo (optional, compact) --}}
+        {{-- Promo --}}
         <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
           <div class="text-sm font-medium text-gray-800 mb-2">Promo Code</div>
-          <div class="flex items-center gap-2">
-            <input type="text" class="flex-1 rounded-lg border-gray-300" placeholder="Enter code">
-            <button class="rounded-lg border border-gray-300 px-3 py-2 hover:bg-gray-50">Apply</button>
-          </div>
-          <p class="mt-2 text-xs text-gray-500">Promo logic not wired yet.</p>
+
+          <form method="POST" action="{{ $cart->promo_code ? route('cart.promo.remove') : route('cart.promo.apply') }}" class="flex items-center gap-2">
+            @csrf
+            <input
+              type="text"
+              name="code"
+              value="{{ old('code', $cart->promo_code) }}"
+              class="flex-1 rounded-lg border-gray-300"
+              placeholder="Enter code"
+              {{ $cart->promo_code ? 'readonly' : '' }}
+            >
+            @if ($cart->promo_code)
+              <button class="rounded-lg border border-gray-300 px-3 py-2 hover:bg-gray-50">Remove</button>
+            @else
+              <button class="rounded-lg bg-slate-900 text-white px-3 py-2 hover:bg-slate-700">Apply</button>
+            @endif
+          </form>
+
+          @if ($cart->promo_code)
+            <p class="mt-2 inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
+              Applied: {{ $cart->promo_code }} (−${{ number_format($cart->discount ?? 0, 2) }})
+            </p>
+          @else
+            <p class="mt-2 text-xs text-gray-500">Have a code? Apply it here.</p>
+          @endif
         </div>
 
-        {{-- Discount (placeholder) --}}
+        {{-- Discount --}}
         <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
           <div class="text-sm text-gray-500">Discount</div>
-          <div class="mt-1 text-xl font-semibold">$0.00</div>
+          <div class="mt-1 text-xl font-semibold">
+            -${{ number_format($cart->discount ?? 0, 2) }}
+          </div>
+          @if ($cart->promo_code)
+            <div class="mt-1 text-xs text-gray-500">Code: {{ $cart->promo_code }}</div>
+          @endif
         </div>
 
-        {{-- Total + actions --}}
+        {{-- Totals + actions --}}
         <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-xs text-gray-500">Items: {{ $cart->quantity }}</div>
-              <div class="text-2xl font-bold">Total: ${{ number_format($cart->total, 2) }}</div>
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-sm text-gray-600">
+              <span>Subtotal</span>
+              <span>${{ number_format($cart->total, 2) }}</span>
             </div>
 
-            <div class="flex items-center gap-2">
-              <form method="POST" action="{{ route('cart.clear') }}">
-                @csrf
-                <button class="rounded-full border border-gray-300 px-4 py-2 hover:bg-gray-50">Clear</button>
-              </form>
+            @if (($cart->discount ?? 0) > 0)
+              <div class="flex items-center justify-between text-sm text-emerald-700">
+                <span>Discount {{ $cart->promo_code ? "({$cart->promo_code})" : '' }}</span>
+                <span>−${{ number_format($cart->discount, 2) }}</span>
+              </div>
+            @endif
+
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-gray-500">Items: {{ $cart->quantity }}</div>
+              <div class="text-2xl font-bold">
+                Total: ${{ number_format($cart->grand_total ?? ($cart->total - ($cart->discount ?? 0)), 2) }}
+              </div>
             </div>
           </div>
 
-          <form method="POST" action="{{ route('cart.checkout') }}" class="mt-3">
-            @csrf
-            <button class="w-full rounded-full bg-rose-600 px-4 py-3 font-semibold text-white hover:bg-rose-700">
-              Checkout
-            </button>
-          </form>
+          <div class="mt-3 flex items-center gap-2">
+            <form method="POST" action="{{ route('cart.clear') }}">
+              @csrf
+              <button class="rounded-full border border-gray-300 px-4 py-2 hover:bg-gray-50">Clear</button>
+            </form>
+
+            <form method="GET" action="{{ route('checkout.show') }}" class="flex-1">
+              <button class="w-full rounded-full bg-rose-600 px-4 py-3 font-semibold text-white hover:bg-rose-700">
+                Checkout
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     @endif

@@ -7,6 +7,7 @@ use App\Models\MongoCartItem;
 use App\Models\MongoOrder;
 use App\Models\MongoOrderItem;
 use App\Models\MongoProduct;
+use App\Models\Promo; // << MySQL promos
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,57 +23,74 @@ class CartController extends Controller
 
         if (!$cart) {
             $cart = new MongoCart([
-                'user_id'  => $userId,
-                'status'   => 'open',
-                'items'    => [],
-                'total'    => 0,
-                'quantity' => 0,
+                'user_id'     => $userId,
+                'status'      => 'open',
+                'items'       => [],
+                'total'       => 0,
+                'quantity'    => 0,
+                // promo-related (Mongo accepts dynamic fields)
+                'promo_code'  => null,
+                'discount'    => 0,
+                'grand_total' => 0,
             ]);
             $cart->save();
         }
-
-        // ⬇️ Make sure items is ALWAYS an array in Mongo
-        $this->ensureItemsArray($cart);
 
         return $cart;
     }
 
     /**
-     * Coerce items into a plain PHP array and persist if needed.
+     * Recompute line totals, subtotal, discount and grand total.
      */
-    private function ensureItemsArray(MongoCart $cart): void
-    {
-        // When embedded relation is present it's usually an EloquentEmbeddedCollection,
-        // but if at some point a Collection or stdClass was assigned directly to items
-        // it can serialize as an object {} in Mongo. Guard against that here.
-        $raw = $cart->getAttribute('items');
-
-        if (is_object($raw)) {
-            // Broken doc from past writes → reset to empty array
-            $cart->items = [];
-            $cart->save();
-            return;
-        }
-
-        // If it's a Laravel Collection, convert to array before saving again
-        if ($raw instanceof \Illuminate\Support\Collection) {
-            $cart->items = $raw->values()->all();
-            $cart->save();
-        }
-    }
-
     protected function recomputeTotals(MongoCart $cart): void
     {
-        $this->ensureItemsArray($cart);
-
         $qty = 0;
         $sum = 0.0;
+
         foreach ($cart->items as $it) {
-            $qty += (int) $it->quantity;
-            $sum += (float) $it->total;
+            $it->quantity = (int) ($it->quantity ?? 1);
+            $it->price    = (float) ($it->price ?? 0);
+            $it->total    = round($it->price * $it->quantity, 2);
+
+            $qty += $it->quantity;
+            $sum += $it->total;
+
+            // persist each normalized line
+            $cart->items()->save($it);
         }
+
         $cart->quantity = $qty;
         $cart->total    = round($sum, 2);
+
+        // ---- Promo application (if any) ----
+        $discount = 0.0;
+
+        if (!empty($cart->promo_code)) {
+            $promo = Promo::where('code', strtoupper($cart->promo_code))->first();
+
+            if ($promo && $promo->active) {
+                $validMin   = $promo->min <= $cart->total;
+                $validExp   = $promo->expires_at ? !$promo->expires_at->isPast() : true;
+
+                if ($validMin && $validExp) {
+                    if ($promo->type === 'percent') {
+                        $discount = round($cart->total * ($promo->amount / 100), 2);
+                    } else { // flat
+                        $discount = round(min($promo->amount, $cart->total), 2);
+                    }
+                } else {
+                    // auto-remove invalid/expired promos
+                    $cart->promo_code = null;
+                }
+            } else {
+                // auto-remove missing/inactive promos
+                $cart->promo_code = null;
+            }
+        }
+
+        $cart->discount    = round(max(0, $discount), 2);
+        $cart->grand_total = round(max(0, $cart->total - $cart->discount), 2);
+
         $cart->save();
     }
 
@@ -81,9 +99,6 @@ class CartController extends Controller
         $cart = $this->getOpenCartForUser($userId);
         $prod = MongoProduct::where('_id', $productId)->first();
         if (!$prod) return null;
-
-        // make sure items is array BEFORE embedsMany save ($addToSet)
-        $this->ensureItemsArray($cart);
 
         $existing = $cart->items->firstWhere('product_id', $productId);
         if ($existing) {
@@ -106,10 +121,16 @@ class CartController extends Controller
     private function coreUpdateQty(string $userId, string $productId, int $qty): bool
     {
         $cart = $this->getOpenCartForUser($userId);
-        $item = $cart->items->firstWhere('product_id', $productId);
-        if (!$item) return false;
 
-        $item->quantity = $qty; // embedded doc mutator recomputes line total
+        $item = $cart->items->firstWhere('product_id', $productId);
+        if (! $item) return false;
+
+        $qty = max(1, (int) $qty);
+        $item->quantity = $qty;
+        $item->total    = round(((float) $item->price) * $qty, 2);
+
+        $cart->items()->save($item);
+
         $this->recomputeTotals($cart);
         return true;
     }
@@ -118,7 +139,6 @@ class CartController extends Controller
     {
         $cart = $this->getOpenCartForUser($userId);
 
-        // Convert to plain array to avoid storing a Collection (would serialize as object)
         $cart->items = $cart->items
             ->reject(fn($i) => $i->product_id === $productId)
             ->values()
@@ -131,7 +151,11 @@ class CartController extends Controller
     private function coreClear(string $userId): void
     {
         $cart = $this->getOpenCartForUser($userId);
-        $cart->items = [];
+        $cart->items      = [];
+        $cart->promo_code = null;
+        $cart->discount   = 0;
+        $cart->grand_total= 0;
+
         $this->recomputeTotals($cart);
     }
 
@@ -143,11 +167,14 @@ class CartController extends Controller
         $this->recomputeTotals($cart);
 
         $order = new MongoOrder([
-            'user_id'  => $userId,
-            'status'   => 'pending',
-            'location' => $location,
-            'total'    => $cart->total,
-            'quantity' => $cart->quantity,
+            'user_id'     => $userId,
+            'status'      => 'pending',
+            'location'    => $location,
+            'total'       => $cart->grand_total ?? $cart->total,
+            'quantity'    => $cart->quantity,
+            'promo_code'  => $cart->promo_code ?? null,
+            'discount'    => $cart->discount ?? 0,
+            'subtotal'    => $cart->total ?? 0,
         ]);
         $order->save();
 
@@ -164,7 +191,7 @@ class CartController extends Controller
 
         $cart->status = 'closed';
         $cart->save();
-        $this->getOpenCartForUser($userId); // new empty cart
+        $this->getOpenCartForUser($userId); // spawn a fresh cart
 
         return $order;
     }
@@ -176,18 +203,14 @@ class CartController extends Controller
     public function show()
     {
         $userId = (string) Auth::id();
-        $cart   = $this->getOpenCartForUser($userId);
+        $cart = $this->getOpenCartForUser($userId);
         $this->recomputeTotals($cart);
         return view('cart', ['cart' => $cart]);
     }
 
     public function webAdd(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|string|size:24',
-            'quantity'   => 'nullable|integer|min:1'
-        ]);
-
+        $request->validate(['product_id' => 'required|string|size:24','quantity'=>'nullable|integer|min:1']);
         $cart = $this->coreAdd((string)Auth::id(), $request->product_id, (int)($request->quantity ?? 1));
         return redirect()->route('cart.show')->with($cart ? 'success' : 'error', $cart ? 'Added to cart' : 'Product not found');
     }
@@ -196,19 +219,24 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|string|size:24',
-            'quantity'   => 'required|integer|min:1',
+            'quantity'   => 'nullable|integer|min:1',
             'op'         => 'nullable|in:inc,dec',
         ]);
 
         $userId = (string) Auth::id();
-        $qty    = (int) $request->input('quantity', 1);
+        $cart   = $this->getOpenCartForUser($userId);
 
-        // handle +/- buttons
-        $op = $request->input('op');
-        if ($op === 'inc') $qty++;
-        if ($op === 'dec') $qty = max(1, $qty - 1);
+        $item = $cart->items->firstWhere('product_id', $request->product_id);
+        if (! $item) {
+            return back()->with('error', 'Item not found');
+        }
+
+        $qty = (int) ($request->quantity ?? $item->quantity ?? 1);
+        if ($request->op === 'inc') $qty = ((int) $item->quantity) + 1;
+        if ($request->op === 'dec') $qty = max(1, ((int) $item->quantity) - 1);
 
         $ok = $this->coreUpdateQty($userId, $request->product_id, $qty);
+
         return back()->with($ok ? 'success' : 'error', $ok ? 'Cart updated' : 'Item not found');
     }
 
@@ -231,6 +259,60 @@ class CartController extends Controller
     }
 
     /* ======================
+     * Promo (Apply/Remove)
+     * ====================== */
+
+    public function webApplyPromo(Request $request)
+    {
+        $request->validate(['code' => 'required|string|max:64']);
+        $code = strtoupper(trim($request->code));
+
+        $promo = Promo::where('code', $code)->first();
+        if (!$promo) {
+            return back()->with('error', 'Promo code not found.');
+        }
+        if (!$promo->active) {
+            return back()->with('error', 'Promo code is inactive.');
+        }
+
+        $cart = $this->getOpenCartForUser((string)Auth::id());
+        $this->recomputeTotals($cart); // current subtotal
+
+        if ($promo->min > 0 && $cart->total < $promo->min) {
+            return back()->with('error', 'Order does not meet the minimum for this code.');
+        }
+        if ($promo->expires_at && $promo->expires_at->isPast()) {
+            return back()->with('error', 'Promo code has expired.');
+        }
+
+        // compute discount against current subtotal
+        $discount = 0.0;
+        if ($promo->type === 'percent') {
+            $discount = round($cart->total * ($promo->amount / 100), 2);
+        } else {
+            $discount = round(min($promo->amount, $cart->total), 2);
+        }
+
+        $cart->promo_code  = $promo->code;
+        $cart->discount    = $discount;
+        $cart->grand_total = round(max(0, $cart->total - $discount), 2);
+        $cart->save();
+
+        return back()->with('success', "Code applied: {$promo->code} (−$".number_format($discount,2).')');
+    }
+
+    public function webRemovePromo(Request $request)
+    {
+        $cart = $this->getOpenCartForUser((string)Auth::id());
+        $cart->promo_code = null;
+        $cart->discount   = 0;
+        $cart->grand_total= 0;
+        $this->recomputeTotals($cart);
+
+        return back()->with('success', 'Promo code removed.');
+    }
+
+    /* ======================
      * API (JSON)
      * ====================== */
 
@@ -250,18 +332,7 @@ class CartController extends Controller
 
     public function apiUpdateQty(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|string|size:24',
-            'quantity'   => 'required|integer|min:1',
-            'op'         => 'nullable|in:inc,dec',
-        ]);
-
-        $qty = (int) $request->input('quantity', 1);
-        $op  = $request->input('op');
-        if ($op === 'inc') $qty++;
-        if ($op === 'dec') $qty = max(1, $qty - 1);
-
-        $ok = $this->coreUpdateQty((string)Auth::id(), $request->product_id, $qty);
+        $ok = $this->coreUpdateQty((string)Auth::id(), $request->product_id, (int)$request->quantity);
         return $ok ? response()->json(['ok'=>true]) : response()->json(['ok'=>false,'message'=>'Item not found'],404);
     }
 

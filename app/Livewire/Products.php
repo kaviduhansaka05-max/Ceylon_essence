@@ -1,84 +1,80 @@
 <?php
+// App\Livewire\Products.php
 
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\MongoProduct;
+use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\DB;
+use App\Models\MongoProduct;
 
+#[Layout('layouts.app')]
 class Products extends Component
 {
-    // filters
     public string $category = '';
-    public string $min_price = '';
-    public string $max_price = '';
-    /** @var array<int,string> */
-    public array $availability = []; // ['Instock','Out of Stock']
+    public $min_price = null;
+    public $max_price = null;
+    public array $availability = [];
 
-    /** @var array<int,string> */
     public array $categories = [];
+    public $products;
 
-    public function mount(): void
+    public function mount()
     {
-        // load distinct categories for the left select
+        $this->loadCategories();
+        $this->apply();
+    }
+
+    // Add this
+    public function refreshData(): void
+    {
+        $this->apply();          // re-run filters & refresh products
+        $this->loadCategories(); // pick up any new categories added by admin
+    }
+
+    private function loadCategories(): void
+    {
         try {
             $this->categories = DB::connection('mongodb')
-                ->getMongoDB()
-                ->selectCollection('products')
+                ->getMongoDB()->selectCollection('products')
                 ->distinct('category') ?? [];
             sort($this->categories);
         } catch (\Throwable $e) {
-            $this->categories = MongoProduct::query()
-                ->pluck('category')->filter()->unique()->sort()->values()->all();
+            // ignore if Mongo not reachable, keep current categories
         }
     }
 
-    // “Apply filters” button (no-op, just triggers re-render)
-    public function apply(): void {}
+    public function apply(): void
+    {
+        $q = MongoProduct::query();
+
+        if ($this->category !== '') $q->where('category', $this->category);
+        if (is_numeric($this->min_price)) $q->where('price', '>=', (float)$this->min_price);
+        if (is_numeric($this->max_price)) $q->where('price', '<=', (float)$this->max_price);
+
+        $norm = collect($this->availability)->map(fn($v) => strtolower(trim($v)))->all();
+        $statuses = [];
+        if (in_array('instock', $norm, true)) $statuses[] = 'Instock';
+        if (in_array('out of stock', $norm, true)) $statuses[] = 'Out of Stock';
+        if ($statuses) $q->whereIn('status', $statuses);
+
+        $this->products = $q->get();
+    }
 
     public function resetFilters(): void
     {
         $this->category = '';
-        $this->min_price = '';
-        $this->max_price = '';
+        $this->min_price = null;
+        $this->max_price = null;
         $this->availability = [];
-    }
-
-    private function buildQuery()
-    {
-        $q = MongoProduct::query();
-
-        if ($this->category !== '') {
-            $q->where('category', $this->category);
-        }
-
-        $min = is_numeric($this->min_price) ? (float) $this->min_price : null;
-        $max = is_numeric($this->max_price) ? (float) $this->max_price : null;
-
-        if ($min !== null && $max !== null && $min <= $max) {
-            $q->whereBetween('price', [$min, $max]);
-        } elseif ($min !== null) {
-            $q->where('price', '>=', $min);
-        } elseif ($max !== null) {
-            $q->where('price', '<=', $max);
-        }
-
-        $norm = array_map(fn($v) => strtolower(trim($v)), (array) $this->availability);
-        $statuses = [];
-        if (in_array('instock', $norm, true))      $statuses[] = 'Instock';
-        if (in_array('out of stock', $norm, true) ||
-            in_array('out_of_stock', $norm, true) ||
-            in_array('outofstock', $norm, true))    $statuses[] = 'Out of Stock';
-
-        if ($statuses) $q->whereIn('status', $statuses);
-
-        return $q->orderBy('name');
+        $this->apply();
     }
 
     public function render()
     {
         return view('livewire.products', [
-            'products' => $this->buildQuery()->get(),
+            'products'   => $this->products,
+            'categories' => $this->categories,
         ]);
     }
 }

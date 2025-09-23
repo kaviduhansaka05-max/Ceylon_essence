@@ -10,16 +10,25 @@
   @endphp
 
 <nav class="mt-2 px-2 space-y-1 overflow-y-auto h-[calc(100vh-112px)]">
-  <a href="{{ route('admin.users.index') }}"
-     class="{{ request()->routeIs('admin.users.*') ? $active : '' }} {{ $link }}">Users</a>
+  
 
-  <a href="{{ route('admin.products.index') }}"
-     class="{{ request()->routeIs('admin.products.*') ? $active : '' }} {{ $link }}">Products</a>
 
  <a href="{{ route('admin.customers.index') }}"
    class="{{ request()->routeIs('admin.customers.*') ? $active : '' }} {{ $link }}">
   Customers
 </a>
+
+  <a href="{{ route('admin.products.index') }}"
+     class="{{ request()->routeIs('admin.products.*') ? $active : '' }} {{ $link }}">Products</a>
+
+
+     
+ {{-- Orders link (point it to the real Orders route) --}}
+<a href="{{ route('admin.orders.index') }}"
+   class="{{ request()->routeIs('admin.orders.*') ? $active : '' }} {{ $link }}">
+  Orders
+</a>
+
 </nav>
 
 

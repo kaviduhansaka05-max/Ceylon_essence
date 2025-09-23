@@ -30,3 +30,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('cart/clear', [CartController::class, 'apiClear']);
     Route::post('checkout',   [CartController::class, 'apiCheckout']);
 });
+
+
+

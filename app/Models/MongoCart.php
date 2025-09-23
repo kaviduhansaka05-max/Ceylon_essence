@@ -10,7 +10,23 @@ class MongoCart extends Model
     protected $connection = 'mongodb';
     protected $collection = 'carts';
 
-    protected $fillable = ['user_id','status','items','total','quantity'];
+   // ...
+protected $fillable = [
+    'user_id','status','items','total','quantity',
+    'promo_code','promo_type','promo_amount','promo_min','promo_expires_at',
+    'discount','grand_total',
+];
+
+protected $casts = [
+    'total'       => 'float',
+    'quantity'    => 'integer',
+    'discount'    => 'float',
+    'grand_total' => 'float',
+    'promo_amount'=> 'float',
+    'promo_min'   => 'float',
+    'promo_expires_at' => 'datetime',
+];
+
 
     protected $attributes = [
         'status'   => 'open',
