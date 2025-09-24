@@ -6,6 +6,7 @@
   <title>Admin • {{ config('app.name') }}</title>
   @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
+
 <body class="bg-gray-100">
   @include('admin.layout.nav')
   <main class="p-6">{{ $slot }}</main>

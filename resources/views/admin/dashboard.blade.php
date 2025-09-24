@@ -1,6 +1,8 @@
 <x-admin-layout>
   <div class="p-6 space-y-8">
 
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- KPI cards --}}
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       @php
@@ -113,7 +115,7 @@
       </div>
     </section>
 
-    {{-- Promo Code Blast (Generate + Save + Share) --}}
+    {{-- Promo Code Blast --}}
     <section class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-semibold text-gray-700">Promo Code Blast</h3>
@@ -164,12 +166,12 @@
         </div>
       </div>
     </section>
-
   </div>
 
-  {{-- Chart.js (CDN) --}}
+  {{-- Chart.js + Promo Script --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // Revenue chart (unchanged)
     (function(){
       const el = document.getElementById('rev30');
       if (!el) return;
@@ -177,21 +179,23 @@
       const data   = @json(array_map(fn($v)=>round($v,2), $series));
       const ctx = el.getContext('2d');
       const g = ctx.createLinearGradient(0, 0, 0, 260); g.addColorStop(0,'rgba(244,63,94,.25)'); g.addColorStop(1,'rgba(244,63,94,.02)');
-      new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Revenue',data,tension:.3,fill:true,backgroundColor:g,borderColor:'rgb(59,130,246)',borderWidth:2,pointRadius:0,pointHoverRadius:3}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}});
+      new Chart(ctx,{
+        type:'line',
+        data:{labels,datasets:[{label:'Revenue',data,tension:.3,fill:true,backgroundColor:g,borderColor:'rgb(59,130,246)',borderWidth:2,pointRadius:0,pointHoverRadius:3}]},
+        options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}
+      });
     })();
 
-    // CSRF helpers
-    function getCsrf() {
-      const m = document.querySelector('meta[name="csrf-token"]');
-      if (m) return m.getAttribute('content') || '';
-      const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
-      return match ? decodeURIComponent(match[1]) : '';
-    }
-
+    // Promo save → /api/promos (with CSRF token + graceful fallback)
     (function(){
+      const API_PROMO_URL = '{{ url('/api/promos') }}';
       const $ = (id) => document.getElementById(id);
       const genBtn = $('promoGenBtn'); const saveBtn = $('promoSaveBtn');
       if (!genBtn) return;
+
+      // get CSRF token
+      const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+      const token = tokenMeta ? tokenMeta.getAttribute('content') : null;
 
       const d = new Date(); d.setDate(d.getDate() + 7);
       $('promoExpiry').value = d.toISOString().slice(0,10);
@@ -199,20 +203,20 @@
       let generated = null;
 
       genBtn.addEventListener('click', () => {
-        const type = $('promoType').value;
+        const type   = $('promoType').value;
         const amount = Math.max(1, parseInt($('promoAmount').value || 0, 10));
-        const min = parseFloat($('promoMin').value || 0);
+        const min    = parseFloat($('promoMin').value || 0);
         const expiry = $('promoExpiry').value || null;
 
         const prefix = type === 'percent' ? 'CEY' : 'CEY$';
         const rnd = Math.random().toString(36).slice(2,7).toUpperCase();
         const code = `${prefix}-${amount}-${rnd}`;
 
-        const site = "{{ url('/') }}";
+        const site    = "{{ url('/') }}";
         const offText = type === 'percent' ? `${amount}% off` : `$${amount} off`;
         const minText = min > 0 ? ` (min $${min})` : '';
         const expText = expiry ? `\nValid until ${expiry}.` : '';
-        const msg = `✨ Limited Time: ${offText}${minText} at Ceylon Essence! Use code ${code} at checkout.\nShop now: ${site}/products${expText}`;
+        const msg     = `✨ Limited Time: ${offText}${minText} at Ceylon Essence! Use code ${code} at checkout.\nShop now: ${site}/products${expText}`;
 
         $('promoCode').textContent = code;
         $('promoMsg').value = msg;
@@ -228,37 +232,49 @@
         try {
           saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
 
-          const url = @json(route('admin.promos.store'));
-          const fd  = new URLSearchParams();
-          for (const [k,v] of Object.entries(generated)) fd.append(k, v ?? '');
-          fd.append('_token', getCsrf());
-
-          const res = await fetch(url, {
+          const res = await fetch(API_PROMO_URL, {
             method: 'POST',
-            headers: { 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest', 'X-CSRF-TOKEN': getCsrf() },
-            body: fd,                          // form-encoded body includes _token
-            credentials: 'include'             // send session cookies
+            headers: { 
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              ...(token ? { 'X-CSRF-TOKEN': token } : {})
+            },
+            body: JSON.stringify(generated)
           });
 
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok || !data.ok) throw new Error(data.message || 'Save failed');
+          const text = await res.text();
+          let data; try { data = JSON.parse(text); } catch { data = {}; }
+
+          if (!res.ok || !data.ok) {
+            const reason = data.message || res.statusText || 'Save failed';
+            throw new Error(`HTTP ${res.status}: ${reason}\n${text.slice(0,800)}`);
+          }
 
           $('promoSavedBadge').classList.remove('hidden');
           saveBtn.textContent = 'Saved';
         } catch (err) {
-          alert(err.message || 'Could not save the promo. Maybe the code already exists? Try Generate again.');
+          alert(`Save failed\n\n${err.message}`);
           saveBtn.disabled = false; saveBtn.textContent = 'Save';
         }
       });
 
       $('promoCopy')?.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText($('promoMsg').value); const b=$('promoCopy'); b.textContent='Copied!'; setTimeout(()=>b.textContent='Copy',1200);} catch(e){alert('Copy failed.');}
+        try { 
+          await navigator.clipboard.writeText($('promoMsg').value); 
+          const b=$('promoCopy'); b.textContent='Copied!'; 
+          setTimeout(()=>b.textContent='Copy',1200);
+        } catch(e){ alert('Copy failed.'); }
       });
 
       $('promoShare')?.addEventListener('click', async () => {
         const text = $('promoMsg').value;
-        if (navigator.share) { try { await navigator.share({ title: 'Ceylon Essence Promo', text }); } catch(e) {} }
-        else { try { await navigator.clipboard.writeText(text); } catch(e) {} alert('Share not supported. Message copied—paste it anywhere.'); }
+        if (navigator.share) { 
+          try { await navigator.share({ title: 'Ceylon Essence Promo', text }); } catch(e) {} 
+        }
+        else { 
+          try { await navigator.clipboard.writeText(text); } catch(e) {} 
+          alert('Share not supported. Message copied—paste it anywhere.'); 
+        }
       });
     })();
   </script>

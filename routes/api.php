@@ -5,7 +5,10 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\Admin\PromoController;
 
+// Stateless promo save (no session, no CSRF)
+Route::post('/promos', [PromoController::class, 'store'])->name('api.promos.store');
 // Keep this
 Route::middleware('auth:sanctum')->get('/user', fn (Request $request) => $request->user());
 
