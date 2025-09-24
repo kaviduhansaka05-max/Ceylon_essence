@@ -18,8 +18,20 @@
                 </div>
                  <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                    <x-nav-link href="{{ route('products') }}" :active="request()->routeIs('products')">
-    {{ __('Products') }}
-</x-nav-link>
+                    {{ __('Products') }}
+                </x-nav-link>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <x-nav-link href="{{ route('our.story') }}" :active="request()->routeIs('our.story')">
+                    {{ __('Our Story') }}
+                </x-nav-link>
+                </div>
+
+                  <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <x-nav-link href="{{ route('our.story') }}" :active="request()->routeIs('our.story')">
+                    {{ __('Contact Us') }}
+                </x-nav-link>
+                </div>
+
 
                 </div>
             </div>
@@ -47,7 +59,6 @@
                                     <div class="block px-4 py-2 text-xs text-gray-400">
                                         {{ __('Manage Team') }}
                                     </div>
-
                                     <!-- Team Settings -->
                                     <x-dropdown-link href="{{ route('teams.show', Auth::user()->currentTeam->id) }}">
                                         {{ __('Team Settings') }}

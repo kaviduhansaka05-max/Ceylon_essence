@@ -12,6 +12,10 @@ use App\Http\Controllers\CartController;
 use App\Livewire\Products as LivewireProducts;
 use App\Http\Controllers\Admin\DashboardController;
 
+
+
+
+
 Route::middleware(['web','auth'])->group(function () {
     Route::post('/cart/promo/apply',  [CartController::class, 'webApplyPromo'])->name('cart.promo.apply');
     Route::post('/cart/promo/remove', [CartController::class, 'webRemovePromo'])->name('cart.promo.remove');
@@ -26,6 +30,9 @@ Route::middleware(['web','auth'])->group(function () {
     Route::post('/checkout', [\App\Http\Controllers\PaymentController::class, 'process'])->name('checkout.process');
 
     Route::get('/order/thanks/{id}', fn ($id) => view('order_thanks', ['orderId' => $id]))->name('order.thanks');
+
+    Route::get('/our-story', fn () => view('our_story'))->name('our.story');
+
 });
 
 Route::get('/products', LivewireProducts::class)->name('products');
