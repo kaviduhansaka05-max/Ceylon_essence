@@ -20,6 +20,7 @@
             $img = 'https://placehold.co/1200x1200/png';
         }
 
+        $id          = $p['_id'] ?? $p['id'] ?? null;
         $name        = $p['name'] ?? '—';
         $category    = trim($p['category'] ?? '');
         $description = $p['description'] ?? null;
@@ -68,14 +69,32 @@
                     @endif
 
                     <div class="mt-6 flex items-center gap-3">
-                        <button
-                            class="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                            Add to Cart
-                        </button>
-                        <button
-                            class="rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
-                            Buy Now
-                        </button>
+                        {{-- Add to Cart --}}
+                        <form method="POST" action="{{ route('cart.add') }}">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $id }}">
+                            <input type="hidden" name="quantity" value="1">
+
+                            <button type="submit"
+                                class="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                                Add to Cart
+                            </button>
+                        </form>
+
+                        {{-- Buy Now --}}
+  <form method="POST" action="{{ route('checkout.buyNow') }}">
+    @csrf
+    <input type="hidden" name="product_id" value="{{ $id }}">
+    <input type="hidden" name="quantity" value="1">
+
+    <button type="submit"
+        class="rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
+        Buy Now
+    </button>
+</form>
+
+
+
                         <a href="{{ route('products') }}"
                            class="ml-auto text-sm text-gray-600 hover:text-gray-900 underline">Back to Products</a>
                     </div>

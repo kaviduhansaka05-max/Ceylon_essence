@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use App\Models\MongoCart;
 use App\Models\MongoOrder;
 use App\Models\MongoOrderItem;
+use MongoDB\BSON\ObjectId;
 
 class PaymentController extends Controller
 {
@@ -26,11 +28,30 @@ class PaymentController extends Controller
     {
         $raw = $cart->getAttribute('items');
 
-        if ($raw instanceof Collection)      return $raw;
-        if (is_array($raw))                  return collect($raw);
-        if (is_object($raw))                 return collect((array) $raw)->values();
+        if ($raw instanceof Collection) return $raw;
+        if (is_array($raw))             return collect($raw);
+        if (is_object($raw))            return collect((array) $raw)->values();
 
         return collect(); // nothing/unknown
+    }
+
+    /** Atomic increment of sold_pieces in Mongo products. */
+    protected function incrementSoldPieces(string $productId, int $qty): void
+    {
+        try {
+            $qty = max(0, (int) $qty);
+            if ($qty <= 0) return;
+
+            $col = DB::connection('mongodb')->getMongoDB()->selectCollection('products');
+
+            $filter = preg_match('/^[a-f0-9]{24}$/i', $productId)
+                ? ['_id' => new ObjectId($productId)]
+                : ['_id' => $productId];
+
+            $col->updateOne($filter, ['$inc' => ['sold_pieces' => $qty]]);
+        } catch (\Throwable $e) {
+            // Optional log
+        }
     }
 
     /** Recompute totals from the normalized items view (no mutation of items). */
@@ -51,27 +72,34 @@ class PaymentController extends Controller
 
     /* ---------- pages ---------- */
 
-    public function show(Request $request)
+    public function show(Request $request, $orderId = null)
     {
+        if ($orderId) {
+            // Direct Buy Now order
+            $order = MongoOrder::with('items')->find($orderId);
+            if (!$order) {
+                return redirect()->route('products')->with('error', 'Order not found.');
+            }
+
+            return view('checkout', [
+                'order' => $order,
+                'mode'  => 'buy-now',
+            ]);
+        }
+
+        // Default: checkout using cart
         $userId = (string) Auth::id();
-        $cart   = $this->findOpenCartForUser($userId);
+        $cart   = $this->findOpenCartForUser($userId); // <<< no protected call
 
-        if (! $cart) {
-            return redirect()->route('cart.show')->with('error', 'Your cart is empty.');
-        }
-
-        $this->recomputeTotals($cart);
-
-        if ($this->items($cart)->isEmpty()) {
-            return redirect()->route('cart.show')->with('error', 'Your cart is empty.');
-        }
-
-        return view('checkout', ['cart' => $cart]);
+        return view('checkout', [
+            'cart' => $cart, // can be null; the Blade handles it
+            'mode' => 'cart',
+        ]);
     }
 
     public function process(Request $request)
     {
-        // demo validation; replace with your gateway’s requirements
+        // Basic validation for card + address
         $request->validate([
             'card_name'   => 'required|string|max:255',
             'card_number' => 'required|string|min:12|max:19',
@@ -79,27 +107,48 @@ class PaymentController extends Controller
             'exp_year'    => 'required|integer|min:' . date('Y') . '|max:' . (date('Y') + 15),
             'cvc'         => 'required|string|min:3|max:4',
             'address'     => 'nullable|string|max:500',
+            'mode'        => 'nullable|in:cart,buy-now',
+            'orderId'     => 'nullable|string',
         ]);
 
         $userId = (string) Auth::id();
-        $cart   = $this->findOpenCartForUser($userId);
+        $mode   = $request->input('mode', 'cart'); // cart OR buy-now
 
-        if (! $cart) {
-            return redirect()->route('cart.show')->with('error', 'Your cart session expired. Please review your cart and try again.');
+        if ($mode === 'buy-now' && $request->filled('orderId')) {
+            // ✅ Buy Now: order already created in CartController::buyNow
+            $order = MongoOrder::find($request->orderId);
+            if (!$order) {
+                return redirect()->route('products')->with('error', 'Order not found.');
+            }
+
+            // Mark order as completed (or paid) and save address
+            $order->status   = 'paid';
+            $order->location = (string) $request->input('address', '');
+            $order->save();
+
+            return redirect()->route('order.thanks', (string) $order->_id)
+                             ->with('success', 'Payment successful for Buy Now order!');
         }
 
-        // ensure totals are up to date (but do not mutate items)
-        $this->recomputeTotals($cart);
+        // ✅ Default cart checkout
+        $cart = $this->findOpenCartForUser($userId);
 
+        if (! $cart) {
+            return redirect()->route('cart.show')
+                ->with('error', 'Your cart session expired. Please review your cart and try again.');
+        }
+
+        $this->recomputeTotals($cart);
         $items = $this->items($cart);
+
         if ($items->isEmpty()) {
             return redirect()->route('cart.show')->with('error', 'Your cart is empty.');
         }
 
-        // create order
+        // Create order from cart
         $order = new MongoOrder([
             'user_id'  => $cart->user_id,
-            'status'   => 'pending',
+            'status'   => 'paid',
             'location' => (string) $request->input('address', ''),
             'total'    => $cart->total,
             'quantity' => $cart->quantity,
@@ -115,13 +164,19 @@ class PaymentController extends Controller
                 'image'      =>          data_get($ci, 'image'),
                 'total'      => (float)  data_get($ci, 'total', 0),
             ]));
+
+            $this->incrementSoldPieces(
+                (string) data_get($ci, 'product_id'),
+                (int)    data_get($ci, 'quantity', 0)
+            );
         }
 
-        // close cart and clear its items to avoid re-using it
+        // Close the cart
         $cart->status = 'closed';
-        $cart->items  = []; // explicitly empty now that we placed an order
+        $cart->items  = [];
         $cart->save();
 
-        return redirect()->route('order.thanks', (string) $order->_id);
+        return redirect()->route('order.thanks', (string) $order->_id)
+                         ->with('success', 'Payment successful for cart checkout!');
     }
 }

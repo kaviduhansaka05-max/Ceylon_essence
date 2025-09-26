@@ -11,9 +11,7 @@
             {{-- Layout: sidebar (filters) on the left, products on the right --}}
             <div class="grid grid-cols-12 gap-6">
                 {{-- Filters --}}
-                <aside
-                    class="col-span-12 md:col-span-3 relative -left-3 sm:-left-5 lg:-left-7 xl:-left-9">
-
+                <aside class="col-span-12 md:col-span-3 relative -left-3 sm:-left-5 lg:-left-7 xl:-left-9">
                     <form method="GET" action="{{ route('products') }}"
                           class="bg-white rounded-2xl shadow ring-1 ring-gray-200 p-5 space-y-5 sticky top-6">
 
@@ -85,7 +83,7 @@
                             @php
                                 $p = is_array($product) ? $product : $product->toArray();
 
-                                // Resolve image (base64 with/without prefix)
+                                // Resolve image
                                 $raw = $p['image'] ?? null;
                                 if ($raw) {
                                     if (\Illuminate\Support\Str::startsWith($raw, 'data:image')) {
@@ -100,30 +98,28 @@
                                 $id        = (string)($p['_id'] ?? ($product->_id ?? ''));
                                 $category  = trim($p['category'] ?? '');
                                 $name      = $p['name'] ?? '—';
-                                $price     = number_format((float)($p['price'] ?? 0), 2);
+                                $priceRaw  = (float)($p['price'] ?? 0);
+                                $price     = number_format($priceRaw, 2);
                                 $status    = $p['status'] ?? 'Instock';
                                 $isInStock = strtolower($status) === 'instock';
                             @endphp
 
-                            {{-- CARD (click anywhere to go to details) --}}
+                            {{-- CARD (no stretched overlay link anymore) --}}
                             <div
                                 class="relative group rounded-[22px] bg-white border border-rose-200 shadow-[0_10px_25px_-10px_rgba(0,0,0,0.25)]
                                        overflow-hidden transition-all duration-300 min-h-[24rem] flex flex-col
                                        hover:-translate-y-1 hover:shadow-2xl hover:ring-2 hover:ring-rose-300/60">
 
-                                {{-- stretched link overlay --}}
-                                <a href="{{ route('products.show', $id) }}" class="absolute inset-0 z-10">
-                                    <span class="sr-only">View {{ $name }}</span>
-                                </a>
-
-                                {{-- Image --}}
+                                {{-- Clickable image area only --}}
                                 <div class="relative">
-                                    <div class="h-64 sm:h-72 w-full overflow-hidden">
-                                        <img
-                                            src="{{ $img }}" alt="{{ $name }}"
-                                            class="h-full w-full object-cover select-none pointer-events-none" />
-                                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/0"></div>
-                                    </div>
+                                    <a href="{{ route('products.show', $id) }}" class="block">
+                                        <div class="h-64 sm:h-72 w-full overflow-hidden">
+                                            <img
+                                                src="{{ $img }}" alt="{{ $name }}"
+                                                class="h-full w-full object-cover select-none" />
+                                            <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/0"></div>
+                                        </div>
+                                    </a>
 
                                     @if($category)
                                         <span
@@ -135,7 +131,9 @@
 
                                 {{-- Body --}}
                                 <div class="flex-1 px-5 pt-4 pb-5">
-                                    <h3 class="font-semibold text-gray-900">{{ $name }}</h3>
+                                    <a href="{{ route('products.show', $id) }}">
+                                        <h3 class="font-semibold text-gray-900 hover:underline">{{ $name }}</h3>
+                                    </a>
 
                                     <div class="mt-2 flex items-center justify-between">
                                         <span class="text-2xl font-bold text-gray-900">${{ $price }}</span>
@@ -148,11 +146,10 @@
                                         </span>
                                     </div>
 
-                                    {{-- Description intentionally removed on this page --}}
-
-                                  {{-- inside the CARD body --}}
-                                    <div class="mt-4 grid grid-cols-2 gap-3">
-                                        <form method="POST" action="{{ route('cart.add') }}" class="relative z-20">
+                                    {{-- Buttons --}}
+                                    <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        {{-- Add to Cart --}}
+                                        <form method="POST" action="{{ route('cart.add') }}">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $id }}">
                                             <input type="hidden" name="quantity" value="1">
@@ -162,12 +159,28 @@
                                             </button>
                                         </form>
 
-                                        <a href="{{ route('products.show', $id) }}"
-                                        class="relative z-20 block text-center rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
-                                        Buy Now
-                                        </a>
-                                    </div>
+                                        {{-- Buy Now --}}
+                                        <form method="POST" action="{{ route('checkout.buyNow') }}">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $id }}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button
+                                                class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
+                                                Buy Now
+                                            </button>
+                                        </form>
 
+                                        {{-- TEST1 (same as Buy Now) --}}
+                                        <form method="POST" action="{{ route('checkout.buyNow') }}">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $id }}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button
+                                                class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition">
+                                                Test1
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
 
                                 <div class="pointer-events-none inset-0 rounded-[22px] ring-1 ring-rose-200/70"></div>

@@ -4,17 +4,37 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\CartController;
 use App\Livewire\Products as LivewireProducts;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\HomePageController;
+
+// -------------------------------
+// Public product routes (frontend)
+// -------------------------------
+
+// Buy Now -> handled by CartController
+
+// Buy Now (creates the one-off order)
+Route::post('/checkout/buy-now', [\App\Http\Controllers\CartController::class, 'buyNow'])
+    ->middleware('auth')
+    ->name('checkout.buyNow');
+
+Route::get('/checkout/{orderId?}', [\App\Http\Controllers\PaymentController::class, 'show'])
+    ->middleware('auth')
+    ->name('checkout.show');
+
+// Process payment
+Route::post('/checkout', [\App\Http\Controllers\PaymentController::class, 'process'])
+    ->middleware('auth')
+    ->name('checkout.process');
 
 
-
-
+Route::get('/products', LivewireProducts::class)->name('products');
+Route::get('/products/{id}', [HomePageController::class, 'show'])->name('products.show');
 
 Route::middleware(['web','auth'])->group(function () {
     Route::post('/cart/promo/apply',  [CartController::class, 'webApplyPromo'])->name('cart.promo.apply');
@@ -33,27 +53,32 @@ Route::middleware(['web','auth'])->group(function () {
 
     Route::get('/our-story', fn () => view('our_story'))->name('our.story');
 
+    // Static pages
+    Route::view('/contact', 'contact')->name('contact');
 });
 
-Route::get('/products', LivewireProducts::class)->name('products');
-Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
-
-if (app()->environment('local')) {
-    Route::get('/mongo-raw', [ProductController::class, 'raw'])->name('mongo.raw');
-}
-
+// -------------------------------
+// Homepage
+// -------------------------------
 Route::get('/', fn () => view('welcome'))->name('home');
 
 Route::get('/choose-login', fn () => view('auth.chooseuser'))->name('choose.login');
 
+// -------------------------------
 // User auth
+// -------------------------------
 Route::get('/login/user',  [AuthenticatedSessionController::class, 'create'])->name('login.user');
 Route::post('/login/user', [AuthenticatedSessionController::class, 'store'])->name('login.user.submit');
 
+// -------------------------------
 // Admin auth
+// -------------------------------
 Route::get('/login/admin',  [AdminController::class, 'showLoginForm'])->name('login.admin');
 Route::post('/login/admin', [AdminController::class, 'login'])->name('login.admin.submit');
 
+// -------------------------------
+// User dashboard
+// -------------------------------
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -62,6 +87,9 @@ Route::middleware([
     Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
 });
 
+// -------------------------------
+// Admin dashboard + management
+// -------------------------------
 Route::middleware('auth:admin')
     ->prefix('admin')
     ->as('admin.')
@@ -88,10 +116,11 @@ Route::middleware('auth:admin')
         Route::post('products',          [AdminProductController::class, 'store'])->name('products.store');
         Route::put('products/{id}',      [AdminProductController::class, 'update'])->name('products.update');
         Route::delete('products/bulk-destroy', [AdminProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
-
-        // No promos POST here — it lives in routes/api.php
     });
 
+// -------------------------------
+// Debug relationships (optional)
+// -------------------------------
 Route::get('/test-relationships', function () {
     $customer = \App\Models\Customer::with('orders')->first();
     dump($customer ? $customer->toArray() : 'No customer found');

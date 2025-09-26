@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\PromoController;
+use App\Http\Controllers\HomePageController;
 
 // Promo (stateless, no CSRF)
 Route::post('/promos', [PromoController::class, 'store'])->name('api.promos.store');
@@ -17,9 +18,11 @@ Route::middleware('auth:sanctum')->get('/user', fn (Request $request) => $reques
 // Fortify register via API
 Route::post('/register', [RegisteredUserController::class, 'store']);
 
-// v1 API group (authenticated)
-Route::middleware('auth:sanctum')->prefix('v1')->as('api.')->group(function () {
+// 🔹 Public Hot Sellers
+Route::get('/top-sellers', [HomePageController::class, 'apiTopSellers']);
 
+// 🔹 v1 API group (authenticated)
+Route::middleware('auth:sanctum')->prefix('v1')->as('api.')->group(function () {
     // Products API (Admin)
     Route::get('products', [AdminProductController::class, 'apiIndex'])->name('products.index');
     Route::get('products/{id}', [AdminProductController::class, 'apiShow'])->name('products.show');

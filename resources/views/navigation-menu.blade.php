@@ -10,30 +10,25 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
-                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                   <x-nav-link href="{{ route('products') }}" :active="request()->routeIs('products')">
-                    {{ __('Products') }}
-                </x-nav-link>
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                <x-nav-link href="{{ route('our.story') }}" :active="request()->routeIs('our.story')">
-                    {{ __('Our Story') }}
-                </x-nav-link>
-                </div>
+           {{-- Navigation Links --}}
+<div class="hidden sm:flex sm:items-center sm:ms-10 space-x-8">
+  <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+    {{ __('Dashboard') }}
+  </x-nav-link>
 
-                  <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                <x-nav-link href="{{ route('our.story') }}" :active="request()->routeIs('our.story')">
-                    {{ __('Contact Us') }}
-                </x-nav-link>
-                </div>
+  <x-nav-link href="{{ route('products') }}" :active="request()->routeIs('products')">
+    {{ __('Products') }}
+  </x-nav-link>
 
+  <x-nav-link href="{{ route('our.story') }}" :active="request()->routeIs('our.story')">
+    {{ __('Our Story') }}
+  </x-nav-link>
 
-                </div>
+  <x-nav-link href="{{ route('contact') }}" :active="request()->routeIs('contact')">
+    {{ __('Contact Us') }}
+  </x-nav-link>
+</div>
+
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">

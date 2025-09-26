@@ -19,25 +19,30 @@
 
         <div>
           <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">Our Story</h1>
-          <p class="mt-5 leading-7 text-gray-600">
-            Ceylon Essence was born from a passion for pure, natural beauty rooted in Sri Lanka’s
-            rich botanical heritage. We craft sensorial skincare using ingredients with known
-            skin-loving benefits—gentle, effective, and elevated. Our products, commitment to
-            sustainability, and love for traditions are how we bottle the true essence of Ceylon.
-          </p>
+           <p class="mt-5 leading-7 text-gray-600">
+    Ceylon Essence was born from a deep passion for natural beauty and the timeless wellness
+    traditions of Sri Lanka. For centuries, the island has been celebrated for its lush landscapes,
+    healing botanicals, and ancient herbal remedies passed down through generations. Inspired by
+    this rich heritage, we set out on a journey to create skincare that is not only effective, but
+    also pure, sustainable, and connected to nature’s wisdom.
+  </p>
 
-          <div class="mt-8 grid sm:grid-cols-2 gap-6 items-start">
-            <p class="leading-7 text-gray-600">
-              Our creations are made with care and mindful design—sourced from the heart of Ceylon,
-              ensuring purity with ethical collection. From botanicals to aromatic blends, every product
-              is thoughtfully formulated and designed to feel luxe, reliable, and real.
-            </p>
-            <img
-              src="{{ asset('images/hero-right.jpg') }}"
-              alt="Signature product arrangement"
-              class="w-full h-auto rounded-xl shadow-sm object-cover aspect-[1/1]"
-            />
-          </div>
+  <p class="mt-4 leading-7 text-gray-600">
+    Each of our products is carefully crafted using ingredients known for their skin-loving
+    benefits—coconut, sandalwood, turmeric, cinnamon, and other natural treasures that have been
+    trusted by our ancestors for their healing properties. We combine these traditional botanicals
+    with modern skincare science to ensure our formulas are gentle yet powerful, effective yet
+    nourishing.
+  </p>
+
+  <p class="mt-4 leading-7 text-gray-600">
+    At the heart of Ceylon Essence is a commitment to sustainability. From responsibly sourcing our
+    raw ingredients to eco-conscious packaging, we take every step to protect the environment while
+    empowering local communities. Our vision is to share Sri Lanka’s botanical wealth with the world
+    while honoring the land and traditions that inspire us.
+  </p>
+
+         
         </div>
       </section>
 
