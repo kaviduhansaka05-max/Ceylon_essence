@@ -63,32 +63,10 @@
         </a>
       </section>
 
-      {{-- HOT SELLERS --}}
-      <section class="space-y-4" id="hot-sellers">
-        <div class="flex items-end justify-between">
-          <div>
-            <h2 class="text-2xl md:text-3xl font-semibold">Hot Sellers</h2>
-            <p class="text-gray-600 text-sm mt-1">Top 5 most-ordered items of all time</p>
-          </div>
-          <a href="{{ route('products') ?? '#' }}" class="text-rose-600 hover:text-rose-700 text-sm font-medium">
-            Browse all
-          </a>
-        </div>
+    <section id="hot-sellers">
+    @livewire('hot-sellers')
+    </section>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4" id="hot-sellers-grid">
-          {{-- Skeletons while loading --}}
-          @for ($i=0; $i<5; $i++)
-            <div class="rounded-xl overflow-hidden bg-gray-50 border border-gray-200 shadow-md">
-              <div class="w-full h-60 bg-gray-100 animate-pulse"></div>
-              <div class="p-4 space-y-2">
-                <div class="h-3 bg-gray-100 rounded animate-pulse"></div>
-                <div class="h-3 w-1/2 bg-gray-100 rounded animate-pulse"></div>
-                <div class="h-3 w-1/3 bg-gray-100 rounded animate-pulse"></div>
-              </div>
-            </div>
-          @endfor
-        </div>
-      </section>
 
       {{-- FEATURE 1 --}}
       <section class="grid md:grid-cols-2 gap-8 items-center">

@@ -5,14 +5,43 @@
 
     {{-- KPI cards --}}
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      @php
-        $kpis = [
-          ['label'=>"Today’s Revenue",'value'=>'$'.number_format($metrics['revenueToday'],2),'icon'=>'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10v2m0 8v2m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'],
-          ['label'=>'New Orders','value'=>$metrics['newOrdersToday'],'icon'=>'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1.293 3.293A1 1 0 006.618 18H18m-11 0a1 1 0 100 2 1 1 0 000-2zm11 0a1 1 0 100 2 1 1 0 000-2z"/></svg>'],
-          ['label'=>'AOV (7d)','value'=>'$'.number_format($metrics['aov7'],2),'icon'=>'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M11 3v18m-7-6l6 6m-6-6l6-6m10 12l-6 6m6-6l-6-6"/></svg>'],
-          ['label'=>'Low Stock Alerts','value'=>$metrics['lowStockCount'],'icon'=>'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'],
-        ];
-      @endphp
+  @php
+  $kpis = [
+    [
+      'label' => "Today’s Revenue",
+      'value' => '$'.number_format($metrics['revenueToday'],2),
+      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10v2m0 8v2m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                 </svg>'
+    ],
+    [
+      'label' => 'New Orders',
+      'value' => $metrics['newOrdersToday'],
+      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                          d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1.293 3.293A1 1 0 006.618 18H18m-11 0a1 1 0 100 2 1 1 0 000-2zm11 0a1 1 0 100 2 1 1 0 000-2z"/>
+                 </svg>'
+    ],
+    [
+      'label' => 'AOV (7d)',
+      'value' => '$'.number_format($metrics['aov7'],2),
+      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 17l6-6 4 4 8-8"/>
+                 </svg>'
+    ],
+    [
+      'label' => 'Low Stock Alerts',
+      'value' => $metrics['lowStockCount'],
+      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                          d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                 </svg>'
+    ],
+  ];
+@endphp
+
 
       @foreach ($kpis as $k)
         <div class="rounded-2xl bg-white/90 backdrop-blur shadow-sm ring-1 ring-gray-100 p-5">

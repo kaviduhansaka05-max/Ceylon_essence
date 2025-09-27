@@ -114,6 +114,43 @@ class CartController extends Controller
         return redirect()->route('cart.show')->with('success', 'Added to cart');
     }
 
+    public function webUpdateQty(Request $request)
+{
+    $request->validate([
+        'product_id' => 'required|string',
+        'quantity'   => 'nullable|integer|min:1',
+        'op'         => 'nullable|string|in:inc,dec', // optional
+    ]);
+
+    $cart = $this->getOpenCartForUser((string) Auth::id());
+
+    // Find item
+    $item = $cart->items->firstWhere('product_id', $request->product_id);
+
+    if ($item) {
+        $qty = (int) ($item->quantity ?? 1);
+
+        // If "op" is set (clicked +/− button)
+        if ($request->op === 'inc') {
+            $qty++;
+        } elseif ($request->op === 'dec') {
+            $qty = max(1, $qty - 1); // don’t go below 1
+        } elseif ($request->filled('quantity')) {
+            $qty = max(1, (int) $request->quantity); // direct input box
+        }
+
+        $item->quantity = $qty;
+        $item->total    = $item->price * $qty;
+        $cart->items()->save($item);
+
+        $this->recomputeTotals($cart);
+
+        return back()->with('success', 'Cart updated');
+    }
+
+    return back()->with('error', 'Item not found in cart');
+}
+
     public function webRemove(Request $request)
     {
         $cart = $this->getOpenCartForUser((string) Auth::id());
@@ -122,6 +159,7 @@ class CartController extends Controller
         return back()->with('success', 'Removed from cart');
     }
 
+    
     public function webClear()
     {
         $cart = $this->getOpenCartForUser((string) Auth::id());

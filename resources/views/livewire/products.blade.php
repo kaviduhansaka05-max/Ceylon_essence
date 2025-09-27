@@ -130,10 +130,15 @@
                                         </button>
                                     </form>
 
-                                    <a href="{{ route('products.show', $id) }}"
-                                       class="relative z-20 block text-center rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
-                                       Buy Now
-                                    </a>
+                                  <form method="POST" action="{{ route('checkout.buyNow') }}" class="relative z-20">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit"
+                                    class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
+                                    Buy Now
+                                </button>
+                            </form>
                                 </div>
                             </div>
 

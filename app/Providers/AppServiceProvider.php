@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-// ✅ use the package’s provider (NOT App\Providers\…)
 use MongoDB\Laravel\MongoDBServiceProvider as MongoServiceProvider;
+
+// 👇 Add this line
+use Livewire\Livewire;
+use App\Http\Livewire\HotSellers;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+   
     }
 }

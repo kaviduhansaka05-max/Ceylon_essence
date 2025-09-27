@@ -32,11 +32,18 @@ Route::post('/checkout', [\App\Http\Controllers\PaymentController::class, 'proce
     ->middleware('auth')
     ->name('checkout.process');
 
+Route::post('customers/{user}/toggle', [CustomerController::class, 'toggleStatus'])->name('admin.customers.toggle');
 
 Route::get('/products', LivewireProducts::class)->name('products');
 Route::get('/products/{id}', [HomePageController::class, 'show'])->name('products.show');
 
 Route::middleware(['web','auth'])->group(function () {
+
+    
+
+    Route::post('customers/{user}/block', [CustomerController::class, 'block'])->name('customers.block');
+Route::post('customers/{user}/unblock', [CustomerController::class, 'unblock'])->name('customers.unblock');
+
     Route::post('/cart/promo/apply',  [CartController::class, 'webApplyPromo'])->name('cart.promo.apply');
     Route::post('/cart/promo/remove', [CartController::class, 'webRemovePromo'])->name('cart.promo.remove');
 

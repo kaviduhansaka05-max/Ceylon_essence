@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Routing\Controller as BaseController;
@@ -24,5 +23,24 @@ class CustomerController extends BaseController
             ->appends(['q' => $q]);
 
         return view('admin.layout.customers', compact('users', 'q'));
+    }
+public function toggleStatus(User $user)
+{
+    $user->status = $user->status === 'active' ? 'inactive' : 'active';
+    $user->save();
+
+    return back()->with('success', "User {$user->name} is now {$user->status}.");
+}
+
+    public function block(User $user)
+    {
+        $user->update(['status' => 'blocked']);
+        return back()->with('success', 'User has been blocked.');
+    }
+
+    public function unblock(User $user)
+    {
+        $user->update(['status' => 'active']);
+        return back()->with('success', 'User has been unblocked.');
     }
 }

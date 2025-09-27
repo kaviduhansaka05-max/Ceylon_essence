@@ -36,6 +36,9 @@
             <main>
                 {{ $slot }}
             </main>
+
+            {{-- ✅ Add global footer here --}}
+            @include('layouts.footer')
         </div>
 
         @stack('modals')
