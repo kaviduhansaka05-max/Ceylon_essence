@@ -1,6 +1,6 @@
 <div x-data="{ open: false }" class="relative">
 
-    <!-- ✅ Top bar with hamburger -->
+    <!-- ✅ Top bar with hamburger (mobile only) -->
     <div class="flex items-center justify-between bg-gray-800 text-white px-4 py-3 sm:hidden">
         <div class="font-bold text-lg">Admin Dashboard</div>
         <button @click="open = !open" class="p-2 rounded hover:bg-gray-700">
@@ -16,11 +16,17 @@
 
     <!-- ✅ Sidebar -->
     <aside
-        :class="open ? 'translate-x-0' : '-translate-x-full'"
-        class="fixed top-0 left-0 h-screen w-64 bg-gray-800 text-white z-40 transform transition-transform duration-300 sm:translate-x-0">
+        :class="open ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'"
+        class="fixed sm:static top-0 left-0 h-screen w-64 bg-gray-800 text-white z-40 transform transition-transform duration-300">
 
-        <div class="px-4 py-4 text-lg font-bold border-b border-gray-700">
-            Admin Dashboard
+        <div class="px-4 py-4 text-lg font-bold border-b border-gray-700 flex justify-between items-center sm:block">
+            <span>Admin Dashboard</span>
+            <!-- Close button (mobile only) -->
+            <button @click="open = false" class="sm:hidden p-1 hover:bg-gray-700 rounded">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
 
         @php
@@ -45,5 +51,12 @@
             </a>
         </nav>
     </aside>
+
+    <!--  Dark overlay when sidebar is open (mobile only) -->
+    <div
+        x-show="open"
+        @click="open = false"
+        class="fixed inset-0 bg-black/50 sm:hidden z-30">
+    </div>
 
 </div>
