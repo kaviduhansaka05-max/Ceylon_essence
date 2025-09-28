@@ -1,6 +1,5 @@
 <x-app-layout>
     <x-slot name="header"></x-slot>
-gimhant pissu
     <main class="py-10">
       <div class="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6 space-y-8">
       {{-- HERO --}}
@@ -65,7 +64,6 @@ gimhant pissu
     <section id="hot-sellers">
     @livewire('hot-sellers')
     </section>
-
 
       {{-- FEATURE 1 --}}
       <section class="grid md:grid-cols-2 gap-8 items-center">
