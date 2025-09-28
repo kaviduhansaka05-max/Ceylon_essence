@@ -76,6 +76,40 @@ class CartController extends Controller
         $this->recomputeTotals($cart);
         return view('cart', ['cart' => $cart]);
     }
+public function webApplyPromo(Request $request)
+{
+    $request->validate([
+        'code' => 'required|string|max:50',
+    ]);
+
+    $cart = $this->getOpenCartForUser((string) Auth::id());
+    $code = trim($request->code);
+
+    // 🔹 simple validation (replace with real DB lookup later)
+    if ($code === 'TEST20') {
+        $cart->promo_code = $code;
+        $cart->discount = round($cart->total * 0.20, 2); // 20% off
+    } else {
+        return back()->with('error', 'Invalid promo code');
+    }
+
+    $cart->grand_total = $cart->total - ($cart->discount ?? 0);
+    $cart->save();
+
+    return back()->with('success', 'Promo code applied');
+}
+
+public function webRemovePromo()
+{
+    $cart = $this->getOpenCartForUser((string) Auth::id());
+
+    $cart->promo_code = null;
+    $cart->discount = 0;
+    $cart->grand_total = $cart->total;
+    $cart->save();
+
+    return back()->with('success', 'Promo code removed');
+}
 
     public function webAdd(Request $request)
     {

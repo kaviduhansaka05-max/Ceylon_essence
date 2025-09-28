@@ -37,6 +37,10 @@ Route::post('customers/{user}/toggle', [CustomerController::class, 'toggleStatus
 Route::get('/products', LivewireProducts::class)->name('products');
 Route::get('/products/{id}', [HomePageController::class, 'show'])->name('products.show');
 
+
+Route::post('/cart/promo/apply', [CartController::class, 'webApplyPromo'])->name('cart.promo.apply');
+Route::post('/cart/promo/remove', [CartController::class, 'webRemovePromo'])->name('cart.promo.remove');
+
 Route::middleware(['web','auth'])->group(function () {
 
     
