@@ -1,9 +1,9 @@
 <x-app-layout>
     <x-slot name="header"></x-slot>
 
+    drtfvgbhjftuvhbjkj
     <main class="py-10">
       <div class="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6 space-y-8">
-
       {{-- HERO --}}
       <section class="relative overflow-hidden rounded-2xl text-white !h-[clamp(500px,22vh,360px)]">
         <video
