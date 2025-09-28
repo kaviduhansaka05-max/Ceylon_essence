@@ -1,11 +1,9 @@
 <?php
-// App\Livewire\Products.php
 
 namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
-use Illuminate\Support\Facades\DB;
 use App\Models\MongoProduct;
 
 #[Layout('layouts.app')]
@@ -17,7 +15,7 @@ class Products extends Component
     public array $availability = [];
 
     public array $categories = [];
-    public $products;
+    public $products = [];
 
     public function mount()
     {
@@ -25,22 +23,19 @@ class Products extends Component
         $this->apply();
     }
 
-    // Add this
     public function refreshData(): void
     {
-        $this->apply();          // re-run filters & refresh products
-        $this->loadCategories(); // pick up any new categories added by admin
+        $this->apply();
+        $this->loadCategories();
     }
 
     private function loadCategories(): void
     {
         try {
-            $this->categories = DB::connection('mongodb')
-                ->getMongoDB()->selectCollection('products')
-                ->distinct('category') ?? [];
+            $this->categories = MongoProduct::distinct('category')->toArray();
             sort($this->categories);
         } catch (\Throwable $e) {
-            // ignore if Mongo not reachable, keep current categories
+            $this->categories = [];
         }
     }
 
@@ -48,17 +43,20 @@ class Products extends Component
     {
         $q = MongoProduct::query();
 
-        if ($this->category !== '') $q->where('category', $this->category);
-        if (is_numeric($this->min_price)) $q->where('price', '>=', (float)$this->min_price);
-        if (is_numeric($this->max_price)) $q->where('price', '<=', (float)$this->max_price);
+        if ($this->category !== '') {
+            $q->where('category', $this->category);
+        }
+        if (is_numeric($this->min_price)) {
+            $q->where('price', '>=', (float) $this->min_price);
+        }
+        if (is_numeric($this->max_price)) {
+            $q->where('price', '<=', (float) $this->max_price);
+        }
+        if (!empty($this->availability)) {
+            $q->whereIn('status', $this->availability);
+        }
 
-        $norm = collect($this->availability)->map(fn($v) => strtolower(trim($v)))->all();
-        $statuses = [];
-        if (in_array('instock', $norm, true)) $statuses[] = 'Instock';
-        if (in_array('out of stock', $norm, true)) $statuses[] = 'Out of Stock';
-        if ($statuses) $q->whereIn('status', $statuses);
-
-        $this->products = $q->get();
+        $this->products = $q->orderBy('created_at', 'desc')->get();
     }
 
     public function resetFilters(): void

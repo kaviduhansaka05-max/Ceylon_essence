@@ -14,7 +14,7 @@
                     {{-- Category --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <select wire:model.live="category"
+                        <select wire:model="category"
                                 class="w-full rounded border-gray-300 focus:border-slate-500 focus:ring-slate-500">
                             <option value="">All</option>
                             @foreach(($categories ?? []) as $cat)
@@ -24,7 +24,6 @@
                     </div>
 
                     {{-- Price range --}}
-                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Price Range ($)</label>
                         <div class="grid grid-cols-2 gap-3">
@@ -120,7 +119,6 @@
 
                                 {{-- Actions --}}
                                 <div class="mt-4 grid grid-cols-2 gap-3">
-                                    {{-- keep normal POST to cart (works fine alongside Livewire) --}}
                                     <form method="POST" action="{{ route('cart.add') }}" class="relative z-20">
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $id }}">
@@ -130,15 +128,15 @@
                                         </button>
                                     </form>
 
-                                  <form method="POST" action="{{ route('checkout.buyNow') }}" class="relative z-20">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit"
-                                    class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
-                                    Buy Now
-                                </button>
-                            </form>
+                                    <form method="POST" action="{{ route('checkout.buyNow') }}" class="relative z-20">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit"
+                                            class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
+                                            Buy Now
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
