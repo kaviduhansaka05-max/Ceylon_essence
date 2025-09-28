@@ -10,22 +10,22 @@
           [
             'label' => "Today’s Revenue",
             'value' => '$'.number_format($metrics['revenueToday'],2),
-            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10v2m0 8v2m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'
+            'icon'  => '<svg class="w-6 h-6" ...>...</svg>'
           ],
           [
             'label' => 'New Orders',
             'value' => $metrics['newOrdersToday'],
-            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1.293 3.293A1 1 0 006.618 18H18m-11 0a1 1 0 100 2 1 1 0 000-2zm11 0a1 1 0 100 2 1 1 0 000-2z"/></svg>'
+            'icon'  => '<svg class="w-6 h-6" ...>...</svg>'
           ],
           [
             'label' => 'AOV (7d)',
             'value' => '$'.number_format($metrics['aov7'],2),
-            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 8-8"/></svg>'
+            'icon'  => '<svg class="w-6 h-6" ...>...</svg>'
           ],
           [
             'label' => 'Low Stock Alerts',
             'value' => $metrics['lowStockCount'],
-            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+            'icon'  => '<svg class="w-6 h-6" ...>...</svg>'
           ],
         ];
       @endphp
@@ -73,6 +73,7 @@
 
     {{-- ✅ Products / Orders / Stock --}}
     <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {{-- Top products --}}
       <div class="bg-white rounded-3xl shadow p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Top Products (30d)</h3>
         <table class="w-full text-sm">
@@ -93,6 +94,7 @@
         </table>
       </div>
 
+      {{-- Recent Orders --}}
       <div class="bg-white rounded-3xl shadow p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Recent Orders</h3>
         <div class="space-y-3">
@@ -110,6 +112,7 @@
         </div>
       </div>
 
+      {{-- Low Stock --}}
       <div class="bg-white rounded-3xl shadow p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Low Stock</h3>
         <table class="w-full text-sm">
@@ -137,6 +140,7 @@
         <p class="text-xs text-gray-500">Generate & save a one-off code, then share.</p>
       </div>
 
+      {{-- Form --}}
       <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-3">
         <div>
           <label class="block text-xs text-gray-600 mb-1">Type</label>
@@ -163,6 +167,7 @@
         </div>
       </div>
 
+      {{-- Result --}}
       <div id="promoResult" class="mt-5 hidden">
         <div class="flex items-center justify-between gap-3">
           <div>
@@ -183,9 +188,10 @@
     </section>
   </div>
 
-  {{-- ✅ Chart.js --}}
+  {{-- ✅ Scripts --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // Revenue chart
     (function(){
       const el = document.getElementById('rev30');
       if (!el) return;
@@ -201,54 +207,30 @@
         options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}
       });
     })();
-  </script>
-</x-admin-layout>
 
-
-  {{-- Chart.js + Promo Script --}}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // Revenue chart (unchanged)
-    (function(){
-      const el = document.getElementById('rev30');
-      if (!el) return;
-      const labels = @json($labels);
-      const data   = @json(array_map(fn($v)=>round($v,2), $series));
-      const ctx = el.getContext('2d');
-      const g = ctx.createLinearGradient(0, 0, 0, 260); g.addColorStop(0,'rgba(244,63,94,.25)'); g.addColorStop(1,'rgba(244,63,94,.02)');
-      new Chart(ctx,{
-        type:'line',
-        data:{labels,datasets:[{label:'Revenue',data,tension:.3,fill:true,backgroundColor:g,borderColor:'rgb(59,130,246)',borderWidth:2,pointRadius:0,pointHoverRadius:3}]},
-        options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}
-      });
-    })();
-
-    // Promo save → /api/promos (with CSRF token + graceful fallback)
+    // Promo script...
     (function(){
       const API_PROMO_URL = '{{ url('/api/promos') }}';
       const $ = (id) => document.getElementById(id);
       const genBtn = $('promoGenBtn'); const saveBtn = $('promoSaveBtn');
       if (!genBtn) return;
 
-      // get CSRF token
-      const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-      const token = tokenMeta ? tokenMeta.getAttribute('content') : null;
-
+      // CSRF + expiry default
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
       const d = new Date(); d.setDate(d.getDate() + 7);
       $('promoExpiry').value = d.toISOString().slice(0,10);
 
       let generated = null;
 
+      // Generate
       genBtn.addEventListener('click', () => {
         const type   = $('promoType').value;
         const amount = Math.max(1, parseInt($('promoAmount').value || 0, 10));
         const min    = parseFloat($('promoMin').value || 0);
         const expiry = $('promoExpiry').value || null;
-
         const prefix = type === 'percent' ? 'CEY' : 'CEY$';
         const rnd = Math.random().toString(36).slice(2,7).toUpperCase();
         const code = `${prefix}-${amount}-${rnd}`;
-
         const site    = "{{ url('/') }}";
         const offText = type === 'percent' ? `${amount}% off` : `$${amount} off`;
         const minText = min > 0 ? ` (min $${min})` : '';
@@ -259,16 +241,15 @@
         $('promoMsg').value = msg;
         $('promoResult').classList.remove('hidden');
         $('promoSavedBadge').classList.add('hidden');
-
         generated = { code, type, amount, min, expires_at: expiry, active: true };
         saveBtn.disabled = false; saveBtn.textContent = 'Save';
       });
 
+      // Save
       saveBtn?.addEventListener('click', async () => {
         if (!generated) return;
         try {
           saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
-
           const res = await fetch(API_PROMO_URL, {
             method: 'POST',
             headers: { 
@@ -278,15 +259,8 @@
             },
             body: JSON.stringify(generated)
           });
-
-          const text = await res.text();
-          let data; try { data = JSON.parse(text); } catch { data = {}; }
-
-          if (!res.ok || !data.ok) {
-            const reason = data.message || res.statusText || 'Save failed';
-            throw new Error(`HTTP ${res.status}: ${reason}\n${text.slice(0,800)}`);
-          }
-
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Save failed');
           $('promoSavedBadge').classList.remove('hidden');
           saveBtn.textContent = 'Saved';
         } catch (err) {
@@ -295,58 +269,20 @@
         }
       });
 
- $('promoCopy')?.addEventListener('click', () => {
-  try {
-    const code = $('promoCode').textContent.trim();
-    if (!code) {
-      alert("No promo code generated yet.");
-      return;
-    }
-
-    if (navigator.clipboard && window.isSecureContext) {
-      // Works on HTTPS / localhost
-      navigator.clipboard.writeText(code).then(() => {
-        showCopied();
-      }).catch(() => {
-        fallbackCopy(code);
+      // Copy
+      $('promoCopy')?.addEventListener('click', () => {
+        const code = $('promoCode').textContent.trim();
+        if (!code) return alert("No promo code generated yet.");
+        navigator.clipboard?.writeText(code).then(()=>{
+          const b = $('promoCopy'); b.textContent='Copied!'; setTimeout(()=>b.textContent='Copy',1200);
+        });
       });
-    } else {
-      // Fallback for HTTP
-      fallbackCopy(code);
-    }
 
-    function fallbackCopy(text) {
-      const temp = document.createElement("textarea");
-      temp.value = text;
-      document.body.appendChild(temp);
-      temp.select();
-      document.execCommand("copy");
-      document.body.removeChild(temp);
-      showCopied();
-    }
-
-    function showCopied() {
-      const b = $('promoCopy');
-      b.textContent = 'Copied!';
-      setTimeout(() => b.textContent = 'Copy', 1200);
-    }
-  } catch (e) {
-    alert('Copy failed. Try manually.');
-  }
-});
-
-
-
-
+      // Share
       $('promoShare')?.addEventListener('click', async () => {
         const text = $('promoMsg').value;
-        if (navigator.share) { 
-          try { await navigator.share({ title: 'Ceylon Essence Promo', text }); } catch(e) {} 
-        }
-        else { 
-          try { await navigator.clipboard.writeText(text); } catch(e) {} 
-          alert('Share not supported. Message copied—paste it anywhere.'); 
-        }
+        if (navigator.share) { try { await navigator.share({ title: 'Ceylon Essence Promo', text }); } catch(e){} }
+        else { navigator.clipboard.writeText(text); alert('Message copied—paste it anywhere.'); }
       });
     })();
   </script>
