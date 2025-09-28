@@ -1,80 +1,66 @@
 <x-admin-layout>
-  <div class="p-6 space-y-8">
+  <div class="p-6 space-y-8 bg-gray-50 min-h-screen">
 
-  <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- KPI cards --}}
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-  @php
-  $kpis = [
-    [
-      'label' => "Today’s Revenue",
-      'value' => '$'.number_format($metrics['revenueToday'],2),
-      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10v2m0 8v2m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                 </svg>'
-    ],
-    [
-      'label' => 'New Orders',
-      'value' => $metrics['newOrdersToday'],
-      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
-                          d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1.293 3.293A1 1 0 006.618 18H18m-11 0a1 1 0 100 2 1 1 0 000-2zm11 0a1 1 0 100 2 1 1 0 000-2z"/>
-                 </svg>'
-    ],
-    [
-      'label' => 'AOV (7d)',
-      'value' => '$'.number_format($metrics['aov7'],2),
-      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 17l6-6 4 4 8-8"/>
-                 </svg>'
-    ],
-    [
-      'label' => 'Low Stock Alerts',
-      'value' => $metrics['lowStockCount'],
-      'icon'  => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
-                          d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                 </svg>'
-    ],
-  ];
-@endphp
-
+    {{-- ✅ KPI cards --}}
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      @php
+        $kpis = [
+          [
+            'label' => "Today’s Revenue",
+            'value' => '$'.number_format($metrics['revenueToday'],2),
+            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-10v2m0 8v2m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'
+          ],
+          [
+            'label' => 'New Orders',
+            'value' => $metrics['newOrdersToday'],
+            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1.293 3.293A1 1 0 006.618 18H18m-11 0a1 1 0 100 2 1 1 0 000-2zm11 0a1 1 0 100 2 1 1 0 000-2z"/></svg>'
+          ],
+          [
+            'label' => 'AOV (7d)',
+            'value' => '$'.number_format($metrics['aov7'],2),
+            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 8-8"/></svg>'
+          ],
+          [
+            'label' => 'Low Stock Alerts',
+            'value' => $metrics['lowStockCount'],
+            'icon'  => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+          ],
+        ];
+      @endphp
 
       @foreach ($kpis as $k)
-        <div class="rounded-2xl bg-white/90 backdrop-blur shadow-sm ring-1 ring-gray-100 p-5">
+        <div class="rounded-2xl bg-white shadow hover:shadow-lg transition p-6">
           <div class="flex items-center gap-3 text-gray-500">
-            <span class="inline-flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 p-2">{!! $k['icon'] !!}</span>
-            <span class="text-sm">{{ $k['label'] }}</span>
+            <span class="inline-flex items-center justify-center rounded-xl bg-gray-100 p-3 text-gray-700">{!! $k['icon'] !!}</span>
+            <span class="text-sm font-medium">{{ $k['label'] }}</span>
           </div>
-          <div class="mt-2 text-3xl font-semibold tracking-tight text-gray-900">{{ $k['value'] }}</div>
+          <div class="mt-3 text-3xl font-bold text-gray-900">{{ $k['value'] }}</div>
         </div>
       @endforeach
     </section>
 
-    {{-- Trends + Pipeline --}}
-    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-      <div class="xl:col-span-2 rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-700">Revenue (last 30 days)</h3>
-        </div>
+    {{-- ✅ Trends + Pipeline --}}
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="xl:col-span-2 bg-white rounded-3xl shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-700">Revenue (last 30 days)</h3>
         <div class="mt-4"><canvas id="rev30" class="!h-64"></canvas></div>
       </div>
 
-      <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
+      <div class="bg-white rounded-3xl shadow p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Order Pipeline</h3>
         @php
           $totalPipe = max(1, array_sum($pipeline));
           $stColors = ['pending'=>'bg-amber-500','processing'=>'bg-sky-600','completed'=>'bg-emerald-600','cancelled'=>'bg-rose-600'];
         @endphp
-        <div class="space-y-4">
+        <div class="space-y-5">
           @foreach (['pending','processing','completed','cancelled'] as $st)
             @php $count = (int)($pipeline[$st] ?? 0); $pct = round(($count / $totalPipe) * 100); @endphp
             <div>
-              <div class="flex items-center justify-between text-sm text-gray-600">
-                <div class="font-medium capitalize">{{ $st }}</div><div>{{ $count }}</div>
+              <div class="flex justify-between text-sm text-gray-600">
+                <span class="capitalize font-medium">{{ $st }}</span>
+                <span>{{ $count }}</span>
               </div>
               <div class="mt-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-2.5 rounded-full {{ $stColors[$st] }}" style="width: {{ $pct }}%"></div>
@@ -85,18 +71,18 @@
       </div>
     </section>
 
-    {{-- Top products / Recent orders / Low stock --}}
-    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-      <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3">Top Products (30d)</h3>
-        <table class="min-w-full text-sm">
-          <thead class="text-xs uppercase text-gray-500">
-            <tr><th class="py-2 text-left">Product</th><th class="py-2 text-right">Units</th><th class="py-2 text-right">Revenue</th></tr>
+    {{-- ✅ Products / Orders / Stock --}}
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="bg-white rounded-3xl shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-4">Top Products (30d)</h3>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-gray-400">
+            <tr><th class="text-left">Product</th><th class="text-right">Units</th><th class="text-right">Revenue</th></tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             @forelse($topProducts as $p)
-              <tr class="hover:bg-gray-50/60">
-                <td class="py-2 pr-2">{{ $p['name'] }}</td>
+              <tr class="hover:bg-gray-50">
+                <td class="py-2">{{ $p['name'] }}</td>
                 <td class="py-2 text-right">{{ $p['units'] }}</td>
                 <td class="py-2 text-right">${{ number_format($p['revenue'], 2) }}</td>
               </tr>
@@ -107,13 +93,13 @@
         </table>
       </div>
 
-      <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3">Recent Orders</h3>
+      <div class="bg-white rounded-3xl shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-4">Recent Orders</h3>
         <div class="space-y-3">
           @forelse($recentOrders as $o)
-            <a href="{{ route('admin.orders.show', (string)$o->_id) }}" class="flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2 hover:bg-gray-50">
+            <a href="{{ route('admin.orders.show', (string)$o->_id) }}" class="flex justify-between items-center rounded-xl border px-3 py-2 hover:bg-gray-50">
               <div>
-                <div class="text-sm font-semibold">#{{ (string)$o->_id }}</div>
+                <div class="font-semibold text-sm">#{{ (string)$o->_id }}</div>
                 <div class="text-xs text-gray-500">{{ ucfirst($o->status ?? 'pending') }} • {{ optional($o->created_at)->diffForHumans() }}</div>
               </div>
               <div class="text-sm font-bold">${{ number_format((float)($o->total ?? 0), 2) }}</div>
@@ -124,16 +110,16 @@
         </div>
       </div>
 
-      <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3">Low Stock</h3>
-        <table class="min-w-full text-sm">
-          <thead class="text-xs uppercase text-gray-500">
-            <tr><th class="py-2 text-left">Product</th><th class="py-2 text-right">Stock</th></tr>
+      <div class="bg-white rounded-3xl shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-4">Low Stock</h3>
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-gray-400">
+            <tr><th class="text-left">Product</th><th class="text-right">Stock</th></tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             @forelse($lowStock as $p)
-              <tr class="hover:bg-gray-50/60">
-                <td class="py-2 pr-2">{{ $p->name }}</td>
+              <tr class="hover:bg-gray-50">
+                <td class="py-2">{{ $p->name }}</td>
                 <td class="py-2 text-right">{{ (int) $p->inventory }}</td>
               </tr>
             @empty
@@ -144,8 +130,8 @@
       </div>
     </section>
 
-    {{-- Promo Code Blast --}}
-    <section class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
+    {{-- ✅ Promo Code Blast --}}
+    <section class="bg-white rounded-3xl shadow p-6">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-semibold text-gray-700">Promo Code Blast</h3>
         <p class="text-xs text-gray-500">Generate & save a one-off code, then share.</p>
@@ -196,6 +182,28 @@
       </div>
     </section>
   </div>
+
+  {{-- ✅ Chart.js --}}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    (function(){
+      const el = document.getElementById('rev30');
+      if (!el) return;
+      const labels = @json($labels);
+      const data   = @json(array_map(fn($v)=>round($v,2), $series));
+      const ctx = el.getContext('2d');
+      const g = ctx.createLinearGradient(0, 0, 0, 260); 
+      g.addColorStop(0,'rgba(244,63,94,.25)'); 
+      g.addColorStop(1,'rgba(244,63,94,.02)');
+      new Chart(ctx,{
+        type:'line',
+        data:{labels,datasets:[{label:'Revenue',data,tension:.3,fill:true,backgroundColor:g,borderColor:'rgb(59,130,246)',borderWidth:2,pointRadius:0,pointHoverRadius:3}]},
+        options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}
+      });
+    })();
+  </script>
+</x-admin-layout>
+
 
   {{-- Chart.js + Promo Script --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
