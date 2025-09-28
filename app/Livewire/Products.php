@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\DB;
 use App\Models\MongoProduct;
 
 #[Layout('layouts.app')]
@@ -32,7 +33,12 @@ class Products extends Component
     private function loadCategories(): void
     {
         try {
-            $this->categories = MongoProduct::distinct('category')->toArray();
+            $raw = DB::connection('mongodb')
+                ->getMongoDB()
+                ->selectCollection('products')
+                ->distinct('category');
+
+            $this->categories = array_filter(array_map('trim', $raw));
             sort($this->categories);
         } catch (\Throwable $e) {
             $this->categories = [];
@@ -52,11 +58,25 @@ class Products extends Component
         if (is_numeric($this->max_price)) {
             $q->where('price', '<=', (float) $this->max_price);
         }
+
         if (!empty($this->availability)) {
-            $q->whereIn('status', $this->availability);
+            $map = collect($this->availability)
+                ->map(fn($v) => strtolower(trim($v)))
+                ->all();
+
+            $statuses = [];
+            if (in_array('instock', $map, true)) {
+                $statuses[] = 'Instock';
+            }
+            if (in_array('out of stock', $map, true)) {
+                $statuses[] = 'Out of Stock';
+            }
+            if ($statuses) {
+                $q->whereIn('status', $statuses);
+            }
         }
 
-        $this->products = $q->orderBy('created_at', 'desc')->get();
+        $this->products = $q->orderBy('created_at', 'desc')->get()->toArray();
     }
 
     public function resetFilters(): void
