@@ -287,7 +287,7 @@
         }
       });
 
- $('promoCopy')?.addEventListener('click', async () => {
+ $('promoCopy')?.addEventListener('click', () => {
   try {
     const code = $('promoCode').textContent.trim();
     if (!code) {
@@ -296,25 +296,37 @@
     }
 
     if (navigator.clipboard && window.isSecureContext) {
-      // Modern way
-      await navigator.clipboard.writeText(code);
+      // Works on HTTPS / localhost
+      navigator.clipboard.writeText(code).then(() => {
+        showCopied();
+      }).catch(() => {
+        fallbackCopy(code);
+      });
     } else {
-      // Fallback for HTTP / insecure
+      // Fallback for HTTP
+      fallbackCopy(code);
+    }
+
+    function fallbackCopy(text) {
       const temp = document.createElement("textarea");
-      temp.value = code;
+      temp.value = text;
       document.body.appendChild(temp);
       temp.select();
       document.execCommand("copy");
       document.body.removeChild(temp);
+      showCopied();
     }
 
-    const b = $('promoCopy');
-    b.textContent = 'Copied!';
-    setTimeout(() => b.textContent = 'Copy', 1200);
-  } catch(e) {
+    function showCopied() {
+      const b = $('promoCopy');
+      b.textContent = 'Copied!';
+      setTimeout(() => b.textContent = 'Copy', 1200);
+    }
+  } catch (e) {
     alert('Copy failed. Try manually.');
   }
 });
+
 
 
 
