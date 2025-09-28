@@ -2,6 +2,7 @@
   <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Contact Us') }}</h2>
   </x-slot>
+  test23323232
 
   <main class="py-10">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-10">
