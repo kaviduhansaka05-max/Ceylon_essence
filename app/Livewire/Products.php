@@ -32,7 +32,9 @@ class Products extends Component
     private function loadCategories(): void
     {
         try {
-            $this->categories = MongoProduct::distinct('category')->get()->pluck('category')->filter()->unique()->sort()->values()->toArray();
+            // ✅ distinct() already returns array
+            $this->categories = MongoProduct::distinct('category')->toArray();
+            sort($this->categories);
         } catch (\Throwable $e) {
             $this->categories = [];
         }
@@ -52,6 +54,7 @@ class Products extends Component
             $q->where('price', '<=', (float) $this->max_price);
         }
         if (!empty($this->availability)) {
+            // Normalize for exact match in DB
             $q->whereIn('status', $this->availability);
         }
 
