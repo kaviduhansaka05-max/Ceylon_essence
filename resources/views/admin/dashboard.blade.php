@@ -287,13 +287,36 @@
         }
       });
 
-      $('promoCopy')?.addEventListener('click', async () => {
-        try { 
-          await navigator.clipboard.writeText($('promoMsg').value); 
-          const b=$('promoCopy'); b.textContent='Copied!'; 
-          setTimeout(()=>b.textContent='Copy',1200);
-        } catch(e){ alert('Copy failed.'); }
-      });
+ $('promoCopy')?.addEventListener('click', async () => {
+  try {
+    const code = $('promoCode').textContent.trim();
+    if (!code) {
+      alert("No promo code generated yet.");
+      return;
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      // Modern way
+      await navigator.clipboard.writeText(code);
+    } else {
+      // Fallback for HTTP / insecure
+      const temp = document.createElement("textarea");
+      temp.value = code;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      document.body.removeChild(temp);
+    }
+
+    const b = $('promoCopy');
+    b.textContent = 'Copied!';
+    setTimeout(() => b.textContent = 'Copy', 1200);
+  } catch(e) {
+    alert('Copy failed. Try manually.');
+  }
+});
+
+
 
       $('promoShare')?.addEventListener('click', async () => {
         const text = $('promoMsg').value;
