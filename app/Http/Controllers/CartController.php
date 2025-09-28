@@ -86,35 +86,37 @@ public function webApplyPromo(Request $request)
     $code = trim($request->code);
 
     try {
-        // get promos collection
         $col = DB::connection('mongodb')->getMongoDB()->selectCollection('promos');
 
-        // find active promo
+        // 🔹 Case-insensitive search, allow multiple active formats
         $promo = $col->findOne([
-            'code'   => $code,
-            'active' => true,
+            'code'   => ['$regex' => '^' . preg_quote($code, '/') . '$', '$options' => 'i'],
+            'active' => ['$in' => [true, 1, "true"]],
         ]);
 
+        // Debugging: if not found, dump a sample document to check field formats
         if (!$promo) {
+            $sample = $col->findOne([], ['projection' => ['code'=>1,'active'=>1,'expires_at'=>1]]);
+            \Log::warning("Promo not found for code: {$code}", ['sample' => $sample]);
             return back()->with('error', 'Invalid promo code');
         }
 
-        // check expiry
+        // 🔹 Check expiry
         if (!empty($promo['expires_at']) && strtotime($promo['expires_at']) < time()) {
             return back()->with('error', 'This promo has expired');
         }
 
-        // check minimum order
+        // 🔹 Check minimum order
         $min = isset($promo['min']) ? (float)$promo['min'] : 0;
         if ($cart->total < $min) {
             return back()->with('error', "Minimum order amount is $" . number_format($min,2));
         }
 
-        // calculate discount
+        // 🔹 Calculate discount
         $discount = 0;
-        if ($promo['type'] === 'percent') {
+        if (($promo['type'] ?? '') === 'percent') {
             $discount = round($cart->total * ((float)$promo['amount'] / 100), 2);
-        } elseif ($promo['type'] === 'flat') {
+        } elseif (($promo['type'] ?? '') === 'flat') {
             $discount = min((float)$promo['amount'], $cart->total);
         }
 
@@ -125,6 +127,7 @@ public function webApplyPromo(Request $request)
 
         return back()->with('success', 'Promo code applied!');
     } catch (\Throwable $e) {
+        \Log::error("Promo apply failed: " . $e->getMessage());
         return back()->with('error', 'Failed to apply promo');
     }
 }
