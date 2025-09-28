@@ -1,4 +1,3 @@
-{{-- resources/views/livewire/products.blade.php --}}
 <div wire:poll.keep-alive.15s="refreshData" class="py-8">
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-900 dark:text-gray-100 leading-tight">
@@ -76,7 +75,7 @@
                             $img = $raw
                                 ? (\Illuminate\Support\Str::startsWith($raw, 'data:image') ? $raw : 'data:image/png;base64,'.$raw)
                                 : 'https://placehold.co/800x800/png';
-                            $id        = (string)($p['_id'] ?? ($product->_id ?? ''));
+                            $id        = isset($p['_id']) ? (string) $p['_id'] : null;
                             $category  = trim($p['category'] ?? '');
                             $name      = $p['name'] ?? '—';
                             $price     = number_format((float)($p['price'] ?? 0), 2);
@@ -88,10 +87,12 @@
                                     overflow-hidden transition-all duration-300 min-h-[24rem] flex flex-col
                                     hover:-translate-y-1 hover:shadow-2xl hover:ring-2 hover:ring-rose-300/60">
 
-                            {{-- stretched link overlay --}}
-                            <a href="{{ route('products.show', $id) }}" class="absolute inset-0 z-10">
-                                <span class="sr-only">View {{ $name }}</span>
-                            </a>
+                            {{-- stretched link overlay (only if id + route exist) --}}
+                            @if($id && Route::has('products.show'))
+                                <a href="{{ route('products.show', ['id' => $id]) }}" class="absolute inset-0 z-10">
+                                    <span class="sr-only">View {{ $name }}</span>
+                                </a>
+                            @endif
 
                             {{-- Image --}}
                             <div class="relative">
