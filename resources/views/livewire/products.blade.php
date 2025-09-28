@@ -55,10 +55,12 @@
 
                     {{-- Actions --}}
                     <div class="flex items-center gap-3 pt-2">
-                        <button wire:click="apply"
+                        <button type="button"
+                                wire:click="apply"
                                 class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-700">
                             Apply Filters
                         </button>
+
                         <button wire:click="resetFilters"
                                 class="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
                             Reset
