@@ -85,18 +85,48 @@ public function webApplyPromo(Request $request)
     $cart = $this->getOpenCartForUser((string) Auth::id());
     $code = trim($request->code);
 
-    // 🔹 simple validation (replace with real DB lookup later)
-    if ($code === 'TEST20') {
-        $cart->promo_code = $code;
-        $cart->discount = round($cart->total * 0.20, 2); // 20% off
-    } else {
-        return back()->with('error', 'Invalid promo code');
+    try {
+        // get promos collection
+        $col = DB::connection('mongodb')->getMongoDB()->selectCollection('promos');
+
+        // find active promo
+        $promo = $col->findOne([
+            'code'   => $code,
+            'active' => true,
+        ]);
+
+        if (!$promo) {
+            return back()->with('error', 'Invalid promo code');
+        }
+
+        // check expiry
+        if (!empty($promo['expires_at']) && strtotime($promo['expires_at']) < time()) {
+            return back()->with('error', 'This promo has expired');
+        }
+
+        // check minimum order
+        $min = isset($promo['min']) ? (float)$promo['min'] : 0;
+        if ($cart->total < $min) {
+            return back()->with('error', "Minimum order amount is $" . number_format($min,2));
+        }
+
+        // calculate discount
+        $discount = 0;
+        if ($promo['type'] === 'percent') {
+            $discount = round($cart->total * ((float)$promo['amount'] / 100), 2);
+        } elseif ($promo['type'] === 'flat') {
+            $discount = min((float)$promo['amount'], $cart->total);
+        }
+
+        $cart->promo_code  = $promo['code'];
+        $cart->discount    = $discount;
+        $cart->grand_total = $cart->total - $discount;
+        $cart->save();
+
+        return back()->with('success', 'Promo code applied!');
+    } catch (\Throwable $e) {
+        return back()->with('error', 'Failed to apply promo');
     }
-
-    $cart->grand_total = $cart->total - ($cart->discount ?? 0);
-    $cart->save();
-
-    return back()->with('success', 'Promo code applied');
 }
 
 public function webRemovePromo()
