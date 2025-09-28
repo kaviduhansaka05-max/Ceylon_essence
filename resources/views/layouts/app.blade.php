@@ -43,9 +43,15 @@
 
     @stack('modals')
 
+    {{-- ✅ Livewire scripts --}}
     @livewireScripts
 
-    <!-- ✅ Alpine.js (needed for Jetstream dropdowns & hamburger menu) -->
+    {{-- ✅ Force load Livewire assets in case vite misses them --}}
+    <script src="{{ asset('vendor/livewire/livewire.js') }}" 
+            data-turbo-eval="false" 
+            data-turbolinks-eval="false"></script>
+
+    {{-- ✅ Alpine.js (needed for dropdowns, Jetstream menus, filters) --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>
