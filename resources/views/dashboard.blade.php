@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header"></x-slot>
 
-    drtfvgbhjftuvhbjkjtrdyfgvjhbk
+TESING1
     <main class="py-10">
       <div class="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6 space-y-8">
       {{-- HERO --}}
@@ -29,7 +29,7 @@
           </div>
         </div>
       </section>
-YCVGUBUYIBIKHBN
+
       {{-- PROMO TILES --}}
       <section class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="shop">
         <a href="#" class="group relative overflow-hidden rounded-xl bg-orange-50">
