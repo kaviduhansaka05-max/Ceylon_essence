@@ -19,7 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', fn (Request $request) => $reques
 
 // Fortify register via API
 //Route::post('/register', [RegisteredUserController::class, 'store']);
-// ✅ JSON auth endpoints:
+// JSON auth endpoints:
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 
