@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout',[AuthController::class, 'logout']);
 });
 
+Route::get('/products', [AdminProductController::class, 'apiIndex']);
+
 // Public Hot Sellers
 Route::get('/top-sellers', [HomePageController::class, 'apiTopSellers']);
 

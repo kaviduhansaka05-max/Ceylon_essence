@@ -168,6 +168,16 @@
         <x-responsive-nav-link href="{{ route('contact') }}" :active="request()->routeIs('contact')">
             {{ __('Contact Us') }}
         </x-responsive-nav-link>
+
+
+        <x-nav-link href="{{ route('cart.show') }}" :active="request()->routeIs('cart.show')">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8h13.2M7 13l-2-8m5 16a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"/>
+    </svg>
+    {{ __('Cart') }}
+</x-nav-link>
+
     </div>
 
     <!-- ✅ Profile Section -->
