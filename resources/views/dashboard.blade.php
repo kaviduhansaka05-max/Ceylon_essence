@@ -27,7 +27,7 @@
           </div>
         </div>
       </section>
-ugyvbuhbweinfiwebihbhi
+
       {{-- PROMO TILES --}}
       <section class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="shop">
         <a href="#" class="group relative overflow-hidden rounded-xl bg-orange-50">
