@@ -1,7 +1,7 @@
 <x-guest-layout>
   <div class="relative min-h-screen flex items-center justify-center bg-gray-100 px-4">
 
-    {{-- Background glows (decorative) --}}
+    {{-- Background glows --}}
     <div class="pointer-events-none absolute inset-0 -z-10">
       <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-rose-200/40 blur-3xl"></div>
       <div class="absolute -bottom-28 -right-28 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl"></div>
@@ -9,12 +9,12 @@
 
     <!-- Card -->
     <div
-      class="w-full max-w-6xl md:w-11/12 grid grid-cols-1 md:grid-cols-5 rounded-3xl overflow-hidden bg-white my-8
+      class="w-full max-w-6xl md:w-11/12 grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden bg-white my-8
              border border-white/70 ring-1 ring-black/5"
       style="box-shadow: 0 40px 80px -20px rgba(0,0,0,.35), 0 18px 36px -18px rgba(0,0,0,.25);"
     >
-      <!-- LEFT: Image (≈60%) -->
-      <div class="md:col-span-3 relative flex items-center justify-center bg-white min-h-[480px] md:min-h-[820px]">
+      <!-- LEFT: Image -->
+      <div class="relative flex items-center justify-center bg-white min-h-[480px] md:min-h-[820px]">
         <img
           src="{{ asset('images/login.png') }}"
           alt="{{ config('app.name') }}"
@@ -23,10 +23,10 @@
         <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-indigo-600/10 to-violet-600/10"></div>
       </div>
 
-      <!-- RIGHT: Form (≈40%) -->
-      <div class="md:col-span-2 bg-white p-8 md:p-12">
-        {{-- Bigger heading --}}
-        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-indigo-700 mb-4">
+      <!-- RIGHT: Form -->
+      <div class="bg-white p-8 md:p-12">
+        {{-- NEW: small Sign In heading at the very top --}}
+        <h2 class="text-sm font-semibold tracking-widest text-indigo-600 uppercase mb-2">
           Sign In
         </h2>
 
@@ -43,20 +43,16 @@
 
           <div>
             <x-label for="email" value="{{ __('Email') }}" class="text-gray-700" />
-            <x-input
-              id="email"
-              class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
-              type="email" name="email" :value="old('email')" required autofocus autocomplete="username"
-            />
+            <x-input id="email"
+                     class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
+                     type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
           </div>
 
           <div>
             <x-label for="password" value="{{ __('Password') }}" class="text-gray-700" />
-            <x-input
-              id="password"
-              class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
-              type="password" name="password" required autocomplete="current-password"
-            />
+            <x-input id="password"
+                     class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
+                     type="password" name="password" required autocomplete="current-password" />
           </div>
 
           <div class="flex items-center justify-between">
