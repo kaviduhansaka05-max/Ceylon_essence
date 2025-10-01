@@ -1,31 +1,28 @@
 <x-guest-layout>
   <div class="relative min-h-screen flex items-center justify-center bg-gray-100 px-4">
 
-    {{-- ambient background glows (purely decorative) --}}
+    {{-- Background glow blobs --}}
     <div class="pointer-events-none absolute inset-0 -z-10">
       <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-rose-200/40 blur-3xl"></div>
       <div class="absolute -bottom-28 -right-28 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl"></div>
     </div>
 
-    <!-- card -->
-    <div
-      class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden
-             border border-white/70 ring-1 ring-black/5 bg-white
-             shadow-2xl hover:shadow-[0_60px_120px_-25px_rgba(0,0,0,.35)]
-             transition-shadow duration-300 ease-out">
+    <!-- Card -->
+    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden
+                border border-white/70 ring-1 ring-black/5 bg-white
+                shadow-2xl hover:shadow-3xl transition-shadow duration-300">
 
-      <!-- LEFT: full image panel (taller + show full image) -->
+      <!-- LEFT: Image -->
       <div class="relative flex items-center justify-center bg-white min-h-[420px] md:min-h-[760px]">
         <img
           src="{{ asset('images/loginimage.png') }}"
           alt="{{ config('app.name') }}"
           class="max-h-full w-full object-contain drop-shadow-xl"
         />
-        {{-- soft tint (optional) --}}
         <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-indigo-600/10 to-violet-600/10"></div>
       </div>
 
-      <!-- RIGHT: sign-in form (texts/fields unchanged) -->
+      <!-- RIGHT: Form (unchanged texts) -->
       <div class="bg-white p-8 md:p-10">
         <x-validation-errors class="mb-4" />
 
@@ -40,28 +37,16 @@
 
           <div>
             <x-label for="email" value="{{ __('Email') }}" class="text-gray-700" />
-            <x-input
-              id="email"
-              class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
-              type="email"
-              name="email"
-              :value="old('email')"
-              required
-              autofocus
-              autocomplete="username"
-            />
+            <x-input id="email"
+                     class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
+                     type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
           </div>
 
           <div>
             <x-label for="password" value="{{ __('Password') }}" class="text-gray-700" />
-            <x-input
-              id="password"
-              class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
-              type="password"
-              name="password"
-              required
-              autocomplete="current-password"
-            />
+            <x-input id="password"
+                     class="block mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
+                     type="password" name="password" required autocomplete="current-password" />
           </div>
 
           <div class="flex items-center justify-between">
@@ -79,10 +64,7 @@
           </div>
 
           <div class="pt-2">
-            <x-button
-              class="w-full justify-center rounded-full bg-rose-600 hover:bg-rose-700 border-0 py-3 text-base
-                     shadow-lg shadow-rose-400/40 transition-colors"
-            >
+            <x-button class="w-full justify-center rounded-full bg-rose-600 hover:bg-rose-700 border-0 py-3 text-base shadow-lg">
               {{ __('Log in') }}
             </x-button>
           </div>
