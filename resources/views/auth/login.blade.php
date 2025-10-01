@@ -23,8 +23,13 @@
         <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-indigo-600/10 to-violet-600/10"></div>
       </div>
 
-      <!-- RIGHT: Form (unchanged texts) -->
+      <!-- RIGHT: Form -->
       <div class="bg-white p-8 md:p-12">
+        {{-- NEW: small Sign In heading at the very top --}}
+        <h2 class="text-sm font-semibold tracking-widest text-indigo-600 uppercase mb-2">
+          Sign In
+        </h2>
+
         <x-validation-errors class="mb-4" />
 
         @session('status')
