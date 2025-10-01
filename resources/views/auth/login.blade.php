@@ -3,19 +3,17 @@
     <!-- container -->
     <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white">
 
-      <!-- LEFT: purple panel (logo only, no text changed) -->
-      <div class="relative bg-gradient-to-br from-indigo-500 via-indigo-500 to-violet-600 p-10 flex items-center justify-center">
-        <div class="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
-        <div class="absolute -bottom-12 -right-12 h-48 w-48 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+ <!-- LEFT: full image panel -->
+<div class="relative overflow-hidden min-h-[320px] md:min-h-[560px]">
+  <img
+    src="{{ asset('images/loginimage.png') }}"
+    alt="{{ config('app.name') }}"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+  {{-- Optional soft tint to match the purple vibe; remove if you don’t want it --}}
+  <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/15 to-violet-600/15"></div>
+</div>
 
-        <div class="flex items-center justify-center">
-          {{-- keep your existing logo slot/component --}}
-    <img src="{{ asset('images/loginimage.png') }}"
-     alt="{{ config('app.name') }}"
-     class="h-32 w-32 object-contain drop-shadow-md" />
-
-
-        </div>
       </div>
 
       <!-- RIGHT: sign-in form (texts/fields unchanged) -->
