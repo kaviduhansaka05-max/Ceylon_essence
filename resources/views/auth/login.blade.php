@@ -10,7 +10,7 @@
 
         <div class="flex items-center justify-center">
           {{-- keep your existing logo slot/component --}}
-         <img src="{{ asset('images/login-logo.svg') }}"
+         <img src="{{ asset('images/loginimage.png') }}"
      alt="{{ config('app.name') }}"
      class="h-16 w-16" />
 
