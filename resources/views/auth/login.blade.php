@@ -2,8 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
     <!-- container -->
     <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white">
-
- <!-- LEFT: full image panel -->
+<!-- LEFT: full image panel -->
 <div class="relative overflow-hidden min-h-[320px] md:min-h-[560px]">
   <img
     src="{{ asset('images/loginimage.png') }}"
@@ -13,6 +12,7 @@
   {{-- Optional soft tint to match the purple vibe; remove if you don’t want it --}}
   <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/15 to-violet-600/15"></div>
 </div>
+
 
       </div>
 
