@@ -10,7 +10,10 @@
 
         <div class="flex items-center justify-center">
           {{-- keep your existing logo slot/component --}}
-          <x-authentication-card-logo class="h-16 w-16 text-white opacity-95" />
+         <img src="{{ asset('images/login-logo.svg') }}"
+     alt="{{ config('app.name') }}"
+     class="h-16 w-16" />
+
         </div>
       </div>
 
