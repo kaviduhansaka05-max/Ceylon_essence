@@ -11,13 +11,10 @@ use App\Http\Controllers\CartController;
 use App\Livewire\Products as LivewireProducts;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\HomePageController;
-
 // -------------------------------
 // Public product routes (frontend)
 // -------------------------------
-
 // Buy Now -> handled by CartController
-
 // Buy Now (creates the one-off order)
 Route::post('/checkout/buy-now', [\App\Http\Controllers\CartController::class, 'buyNow'])
     ->middleware('auth')
@@ -43,9 +40,7 @@ Route::post('/cart/promo/remove', [CartController::class, 'webRemovePromo'])->na
 
 Route::middleware(['web','auth'])->group(function () {
 
-    
-
-    Route::post('customers/{user}/block', [CustomerController::class, 'block'])->name('customers.block');
+Route::post('customers/{user}/block', [CustomerController::class, 'block'])->name('customers.block');
 Route::post('customers/{user}/unblock', [CustomerController::class, 'unblock'])->name('customers.unblock');
 
     Route::post('/cart/promo/apply',  [CartController::class, 'webApplyPromo'])->name('cart.promo.apply');
@@ -72,9 +67,7 @@ Route::post('customers/{user}/unblock', [CustomerController::class, 'unblock'])-
 // Homepage
 // -------------------------------
 Route::get('/', fn () => view('welcome'))->name('home');
-
 Route::get('/choose-login', fn () => view('auth.chooseuser'))->name('choose.login');
-
 // -------------------------------
 // User auth
 // -------------------------------
@@ -128,7 +121,6 @@ Route::middleware('auth:admin')
         Route::put('products/{id}',      [AdminProductController::class, 'update'])->name('products.update');
         Route::delete('products/bulk-destroy', [AdminProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     });
-
 // -------------------------------
 // Debug relationships (optional)
 // -------------------------------

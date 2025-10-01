@@ -53,19 +53,38 @@
                         </div>
                     </div>
 
-                    {{-- Actions --}}
-                    <div class="flex items-center gap-3 pt-2">
-                        <button type="button"
-                                wire:click="apply"
-                                class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-700">
-                            Apply Filters
-                        </button>
+                   {{-- Actions --}}
+<div class="mt-4 grid grid-cols-2 gap-3">
+  @auth
+    <form method="POST" action="{{ route('cart.add') }}" class="relative z-20">
+      @csrf
+      <input type="hidden" name="product_id" value="{{ $id }}">
+      <input type="hidden" name="quantity" value="1">
+      <button class="w-full rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+        Add to Cart
+      </button>
+    </form>
 
-                        <button wire:click="resetFilters"
-                                class="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
-                            Reset
-                        </button>
-                    </div>
+    <form method="POST" action="{{ route('checkout.buyNow') }}" class="relative z-20">
+      @csrf
+      <input type="hidden" name="product_id" value="{{ $id }}">
+      <input type="hidden" name="quantity" value="1">
+      <button class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700">
+        Buy Now
+      </button>
+    </form>
+  @else
+    <a href="{{ route('login.user') }}"
+       class="relative z-20 w-full text-center rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+      Log in to add
+    </a>
+    <a href="{{ route('login.user') }}"
+       class="relative z-20 w-full text-center rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700">
+      Log in to buy now
+    </a>
+  @endauth
+</div>
+
                 </div>
             </aside>
 
