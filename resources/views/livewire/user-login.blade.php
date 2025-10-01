@@ -2,7 +2,7 @@
     @if (session()->has('error'))
         <div class="text-red-500 text-center mb-4">{{ session('error') }}</div>
     @endif
-yrdfvtyc7utcvutcvutvututfcutcutctctucut
+
     @if (session()->has('message'))
         <div class="text-green-500 text-center mb-4">{{ session('message') }}</div>
     @endif
