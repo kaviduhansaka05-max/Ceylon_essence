@@ -1,19 +1,20 @@
 <x-guest-layout>
   <div class="relative min-h-screen flex items-center justify-center bg-gray-100 px-4">
 
-    {{-- Background glow blobs --}}
+    {{-- Background glows --}}
     <div class="pointer-events-none absolute inset-0 -z-10">
       <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-rose-200/40 blur-3xl"></div>
       <div class="absolute -bottom-28 -right-28 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl"></div>
     </div>
 
     <!-- Card -->
-    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden
-                border border-white/70 ring-1 ring-black/5 bg-white
-                shadow-2xl hover:shadow-3xl transition-shadow duration-300">
-
+    <div
+      class="w-full max-w-6xl md:w-11/12 grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden bg-white my-8
+             border border-white/70 ring-1 ring-black/5"
+      style="box-shadow: 0 40px 80px -20px rgba(0,0,0,.35), 0 18px 36px -18px rgba(0,0,0,.25);"
+    >
       <!-- LEFT: Image -->
-      <div class="relative flex items-center justify-center bg-white min-h-[420px] md:min-h-[760px]">
+      <div class="relative flex items-center justify-center bg-white min-h-[480px] md:min-h-[820px]">
         <img
           src="{{ asset('images/loginimage.png') }}"
           alt="{{ config('app.name') }}"
@@ -23,7 +24,7 @@
       </div>
 
       <!-- RIGHT: Form (unchanged texts) -->
-      <div class="bg-white p-8 md:p-10">
+      <div class="bg-white p-8 md:p-12">
         <x-validation-errors class="mb-4" />
 
         @session('status')
@@ -32,7 +33,7 @@
           </div>
         @endsession
 
-        <form method="POST" action="{{ route('login') }}" class="space-y-5">
+        <form method="POST" action="{{ route('login') }}" class="space-y-6">
           @csrf
 
           <div>
