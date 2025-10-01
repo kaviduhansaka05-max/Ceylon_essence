@@ -3,15 +3,15 @@
     <!-- container -->
     <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white">
 
-      <!-- LEFT: full image panel -->
-      <div class="relative min-h-[300px] md:min-h-[560px]">
+      <!-- LEFT: full image panel (taller + show full image) -->
+      <div class="relative flex items-center justify-center bg-white min-h-[420px] md:min-h-[720px]">
         <img
           src="{{ asset('images/loginimage.png') }}"
           alt="{{ config('app.name') }}"
-          class="absolute inset-0 h-full w-full object-cover"
+          class="max-h-full w-full object-contain"
         />
-        {{-- Optional soft tint; remove if not needed --}}
-        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/15 to-violet-600/15"></div>
+        {{-- soft tint (optional) --}}
+        <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-indigo-600/10 to-violet-600/10"></div>
       </div>
 
       <!-- RIGHT: sign-in form (texts/fields unchanged) -->
@@ -69,7 +69,7 @@
 
           <div class="pt-2">
             <x-button
-              class="w-full justify-center rounded-full bg-indigo-600 hover:bg-indigo-700 border-0 py-3 text-base"
+              class="w-full justify-center rounded-full bg-rose-600 hover:bg-rose-700 border-0 py-3 text-base"
             >
               {{ __('Log in') }}
             </x-button>
