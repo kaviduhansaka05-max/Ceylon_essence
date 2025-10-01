@@ -13,9 +13,34 @@
         </p>
 
         <dl class="mt-6 space-y-4 text-gray-700">
-          <div><dt class="font-medium">Email</dt><dd>hello@ceylonessence.com</dd></div>
-          <div><dt class="font-medium">Phone</dt><dd>+94 77 123 4567</dd></div>
-          <div><dt class="font-medium">Address</dt><dd>Colombo, Sri Lanka</dd></div>
+          <div>
+            <dt class="font-medium">Email</dt>
+            <dd>
+              <a href="mailto:ceylonessence@gmail.com" class="text-indigo-600 hover:text-indigo-700">
+                ceylonessence@gmail.com
+              </a>
+            </dd>
+          </div>
+
+          <div>
+            <dt class="font-medium">Phone</dt>
+            <dd>+94 77 123 4567</dd>
+          </div>
+
+          <div>
+            <dt class="font-medium">Address</dt>
+            <dd>Colombo, Sri Lanka</dd>
+          </div>
+
+          <div>
+            <dt class="font-medium">Instagram</dt>
+            <dd>
+              <a href="https://www.instagram.com/glossier/?hl=en" target="_blank" rel="noopener noreferrer"
+                 class="text-indigo-600 hover:text-indigo-700">
+                ceylon essence
+              </a>
+            </dd>
+          </div>
         </dl>
       </div>
 
@@ -24,20 +49,29 @@
         @csrf
         <div>
           <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input type="text" class="mt-1 w-full rounded-md border-gray-300 focus:border-rose-500 focus:ring-rose-500" placeholder="Your name">
+          <input type="text"
+                 class="mt-1 w-full rounded-md border-gray-300 focus:border-rose-500 focus:ring-rose-500"
+                 placeholder="Your name">
         </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" class="mt-1 w-full rounded-md border-gray-300 focus:border-rose-500 focus:ring-rose-500" placeholder="you@example.com">
+          <input type="email"
+                 class="mt-1 w-full rounded-md border-gray-300 focus:border-rose-500 focus:ring-rose-500"
+                 placeholder="you@example.com">
         </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700">Message</label>
-          <textarea rows="5" class="mt-1 w-full rounded-md border-gray-300 focus:border-rose-500 focus:ring-rose-500" placeholder="How can we help?"></textarea>
+          <textarea rows="5"
+                    class="mt-1 w-full rounded-md border-gray-300 focus:border-rose-500 focus:ring-rose-500"
+                    placeholder="How can we help?"></textarea>
         </div>
-        <button type="button" class="w-full inline-flex justify-center px-4 py-2 rounded-md bg-rose-600 text-white font-semibold hover:bg-rose-700">
+
+        <button type="button"
+                class="w-full inline-flex justify-center px-4 py-2 rounded-md bg-rose-600 text-white font-semibold hover:bg-rose-700">
           Send Message
         </button>
-        <p class="text-xs text-gray-500 text-center">This demo form doesn’t submit yet.</p>
       </form>
     </div>
   </main>
