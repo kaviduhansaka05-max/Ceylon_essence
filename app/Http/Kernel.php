@@ -28,7 +28,7 @@ class Kernel extends HttpKernel
         ],
     ];
 
-    // ✅ register your custom middleware
+    // register your custom middleware
     protected $routeMiddleware = [
         // default ones...
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
