@@ -24,7 +24,6 @@
                     </div>
 
                     {{-- Price range --}}
-                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Price Range ($)</label>
                         <div class="grid grid-cols-2 gap-3">
@@ -53,38 +52,19 @@
                         </div>
                     </div>
 
-                   {{-- Actions --}}
-<div class="mt-4 grid grid-cols-2 gap-3">
-  @auth
-    <form method="POST" action="{{ route('cart.add') }}" class="relative z-20">
-      @csrf
-      <input type="hidden" name="product_id" value="{{ $id }}">
-      <input type="hidden" name="quantity" value="1">
-      <button class="w-full rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-        Add to Cart
-      </button>
-    </form>
+                    {{-- Filter actions --}}
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="button"
+                                wire:click="apply"
+                                class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-700">
+                            Apply Filters
+                        </button>
 
-    <form method="POST" action="{{ route('checkout.buyNow') }}" class="relative z-20">
-      @csrf
-      <input type="hidden" name="product_id" value="{{ $id }}">
-      <input type="hidden" name="quantity" value="1">
-      <button class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700">
-        Buy Now
-      </button>
-    </form>
-  @else
-    <a href="{{ route('login.user') }}"
-       class="relative z-20 w-full text-center rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-      Log in to add
-    </a>
-    <a href="{{ route('login.user') }}"
-       class="relative z-20 w-full text-center rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700">
-      Log in to buy now
-    </a>
-  @endauth
-</div>
-
+                        <button wire:click="resetFilters"
+                                class="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
+                            Reset
+                        </button>
+                    </div>
                 </div>
             </aside>
 
@@ -101,7 +81,8 @@
                             $id        = (string)($p['_id'] ?? ($product->_id ?? ''));
                             $category  = trim($p['category'] ?? '');
                             $name      = $p['name'] ?? '—';
-                            $price     = number_format((float)($p['price'] ?? 0), 2);
+                            $priceRaw  = (float)($p['price'] ?? 0);
+                            $price     = number_format($priceRaw, 2);
                             $status    = $p['status'] ?? 'Instock';
                             $isInStock = strtolower($status) === 'instock';
                         @endphp
@@ -139,27 +120,48 @@
                                     </span>
                                 </div>
 
-                                {{-- Actions --}}
-                                <div class="mt-4 grid grid-cols-2 gap-3">
-                                    {{-- keep normal POST to cart (works fine alongside Livewire) --}}
-                                    <form method="POST" action="{{ route('cart.add') }}" class="relative z-20">
-                                        @csrf
-                                        <input type="hidden" name="product_id" value="{{ $id }}">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button class="w-full rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                                            Add to Cart
-                                        </button>
-                                    </form>
+                                {{-- Actions (per product) --}}
+                                <div class="mt-4 grid grid-cols-2 gap-3 relative z-20">
+                                    @auth
+                                        @if($id && $isInStock)
+                                            <form method="POST" action="{{ route('cart.add') }}">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $id }}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button class="w-full rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                                                    Add to Cart
+                                                </button>
+                                            </form>
 
-                                  <form method="POST" action="{{ route('checkout.buyNow') }}" class="relative z-20">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit"
-                                    class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
-                                    Buy Now
-                                </button>
-                            </form>
+                                            <form method="POST" action="{{ route('checkout.buyNow') }}">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $id }}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button type="submit"
+                                                        class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
+                                                    Buy Now
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button disabled
+                                                    class="w-full rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">
+                                                {{ $id ? 'Out of Stock' : 'Unavailable' }}
+                                            </button>
+                                            <button disabled
+                                                    class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-300 cursor-not-allowed">
+                                                Buy Now
+                                            </button>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('login.user') }}"
+                                           class="w-full text-center rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                                            Log in to add
+                                        </a>
+                                        <a href="{{ route('login.user') }}"
+                                           class="w-full text-center rounded-full px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition">
+                                            Log in to buy now
+                                        </a>
+                                    @endauth
                                 </div>
                             </div>
 
