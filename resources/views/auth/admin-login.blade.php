@@ -8,9 +8,9 @@
       <div class="absolute -bottom-28 -right-28 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl"></div>
     </div>
 
-    {{-- Card (60/40 split) --}}
+       <!-- Card -->
     <div
-      class="w-full md:w-11/12 max-w-6xl grid grid-cols-1 md:grid-cols-5 rounded-3xl overflow-hidden bg-white my-8
+      class="w-full max-w-6xl md:w-11/12 grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden bg-white my-8
              border border-white/70 ring-1 ring-black/5"
       style="box-shadow: 0 40px 80px -20px rgba(0,0,0,.35), 0 18px 36px -18px rgba(0,0,0,.25);"
     >
