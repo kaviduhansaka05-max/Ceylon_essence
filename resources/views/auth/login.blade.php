@@ -16,7 +16,7 @@
       <!-- LEFT: Image -->
       <div class="relative flex items-center justify-center bg-white min-h-[480px] md:min-h-[820px]">
         <img
-          src="{{ asset('images/loginimage.png') }}"
+          src="{{ asset('images/loginpage.png') }}"
           alt="{{ config('app.name') }}"
           class="max-h-full w-full object-contain drop-shadow-xl"
         />
