@@ -1,22 +1,21 @@
-{{-- resources/views/auth/admin-login.blade.php (or wherever your admin login view lives) --}}
+{{-- resources/views/auth/admin-login.blade.php --}}
 <x-guest-layout>
   <div class="relative min-h-screen flex items-center justify-center bg-gray-100 px-4">
 
-    {{-- Decorative background glows --}}
+    {{-- Decorative background glows (same as user page) --}}
     <div class="pointer-events-none absolute inset-0 -z-10">
       <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-rose-200/40 blur-3xl"></div>
       <div class="absolute -bottom-28 -right-28 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl"></div>
     </div>
 
-    {{-- Card (60/40 split) --}}
+    {{-- Card: SAME width & layout as user page (50/50) --}}
     <div
-      class="w-full md:w-11/12 max-w-6xl grid grid-cols-1 md:grid-cols-5 rounded-3xl overflow-hidden bg-white my-8
+      class="w-full max-w-6xl md:w-11/12 grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden bg-white my-8
              border border-white/70 ring-1 ring-black/5"
       style="box-shadow: 0 40px 80px -20px rgba(0,0,0,.35), 0 18px 36px -18px rgba(0,0,0,.25);"
     >
-      {{-- LEFT: Image panel (60%) --}}
-      <div class="relative md:col-span-3 flex items-center justify-center bg-white min-h-[480px] md:min-h-[820px]">
-        {{-- Use any image you want; this path matches your user page. --}}
+      {{-- LEFT: Image panel (match user page sizing) --}}
+      <div class="relative flex items-center justify-center bg-white min-h-[480px] md:min-h-[820px]">
         <img
           src="{{ asset('images/login.png') }}"
           alt="{{ config('app.name') }}"
@@ -25,9 +24,8 @@
         <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-indigo-600/10 to-violet-600/10"></div>
       </div>
 
-      {{-- RIGHT: Form (40%) --}}
-      <div class="md:col-span-2 bg-white p-8 md:p-12">
-        {{-- Bigger "Sign In" title --}}
+      {{-- RIGHT: Admin login form (same spacing as user) --}}
+      <div class="bg-white p-8 md:p-12">
         <h2 class="text-3xl font-bold tracking-tight text-indigo-700 mb-6">
           {{ __('Sign In') }}
         </h2>
