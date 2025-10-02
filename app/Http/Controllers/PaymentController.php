@@ -175,13 +175,14 @@ class PaymentController extends Controller
         }
 
         // Create order from cart
-        $order = new MongoOrder([
+            $order = new MongoOrder([
             'user_id'  => $cart->user_id,
-            'status'   => 'paid',
+            'status'   => 'pending',   // 👈 default new order state
             'location' => (string) $request->input('address', ''),
             'total'    => $cart->total,
             'quantity' => $cart->quantity,
         ]);
+
         $order->save();
 
         foreach ($items as $ci) {
@@ -194,7 +195,7 @@ class PaymentController extends Controller
                 'total'      => (float)  data_get($ci, 'total', 0),
             ]));
 
-            // ✅ Update product stats
+            // Update product stats
             $this->incrementSoldPieces(
                 (string) data_get($ci, 'product_id'),
                 (int)    data_get($ci, 'quantity', 0)
