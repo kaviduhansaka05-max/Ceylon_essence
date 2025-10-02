@@ -27,4 +27,16 @@ class AdminController extends Controller
     {
         return view('admin.dashboard');
     }
+    
+
+    // ✅ logout function
+    public function logout(Request $request)
+    {
+        Auth::guard('admin')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login.admin')->with('success', 'Logged out successfully.');
+    }
 }
