@@ -89,20 +89,9 @@
                     {{ $p->status }}
                   </span>
                 </td>
-                <td class="px-4 py-3 flex gap-2">
+                <td class="px-4 py-3">
                   <a href="{{ route('admin.products.edit', (string) $p->_id) }}"
                      class="text-indigo-700 hover:text-indigo-900 underline">Edit</a>
-                  {{-- Optional: Single Delete --}}
-                  <form method="POST" action="{{ route('admin.products.bulk-destroy') }}" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <input type="hidden" name="ids[]" value="{{ $p->_id }}">
-                    <button type="submit"
-                            onclick="return confirm('Delete this product?')"
-                            class="text-rose-600 hover:text-rose-800 underline">
-                      Delete
-                    </button>
-                  </form>
                 </td>
               </tr>
             @empty
@@ -120,7 +109,7 @@
   </form>
 </div>
 
-{{-- Select All JS --}}
+{{-- ✅ Select All JS --}}
 <script>
   document.getElementById('select-all').addEventListener('change', function(e) {
     document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = e.target.checked);
