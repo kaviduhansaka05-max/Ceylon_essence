@@ -1,4 +1,5 @@
 <div>
+  {{-- Page header --}}
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold tracking-tight">Customers</h1>
 
@@ -9,7 +10,8 @@
     </div>
   </div>
 
-  <div class="bg-white rounded-2xl shadow ring-1 ring-black/5 overflow-hidden">
+  {{-- ✅ Desktop Table --}}
+  <div class="hidden md:block bg-white rounded-2xl shadow ring-1 ring-black/5 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="min-w-full table-auto">
         <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
@@ -70,8 +72,6 @@
               <td class="px-4 py-3">{{ $u->current_team_id ?? '—' }}</td>
               <td class="px-4 py-3">{{ optional($u->created_at)->diffForHumans() ?? '—' }}</td>
               <td class="px-4 py-3">{{ optional($u->updated_at)->diffForHumans() ?? '—' }}</td>
-
-              {{-- ✅ Actions --}}
               <td class="px-4 py-3">
                 <form method="POST" action="{{ route('admin.customers.toggle', $u->id) }}">
                   @csrf
@@ -96,5 +96,54 @@
     <div class="px-4 py-3">
       {{ $users->links() }}
     </div>
+  </div>
+
+  {{-- ✅ Mobile Cards --}}
+  <div class="space-y-4 md:hidden">
+    @forelse($users as $u)
+      @php
+        $avatar = method_exists($u, 'getProfilePhotoUrlAttribute')
+                  ? $u->profile_photo_url
+                  : ($u->profile_photo_path
+                      ? \Illuminate\Support\Facades\Storage::url($u->profile_photo_path)
+                      : 'https://placehold.co/40x40/png');
+        $verified = $u->email_verified_at !== null;
+        $twoFactor = !empty($u->two_factor_confirmed_at) || !empty($u->two_factor_secret);
+      @endphp
+      <div class="bg-white shadow rounded-xl p-4 space-y-2">
+        <div class="flex items-center gap-3">
+          <img src="{{ $avatar }}" class="h-12 w-12 rounded-full object-cover ring-1 ring-slate-200" alt="{{ $u->name }}">
+          <div>
+            <div class="font-semibold">{{ $u->name }}</div>
+            <div class="text-xs text-slate-500">{{ $u->email }}</div>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="px-2 py-0.5 rounded-full {{ ($u->status ?? 'active') === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+            {{ ucfirst($u->status ?? 'active') }}
+          </span>
+          <span class="px-2 py-0.5 rounded-full {{ $verified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+            {{ $verified ? 'Verified' : 'Pending' }}
+          </span>
+          <span class="px-2 py-0.5 rounded-full {{ $twoFactor ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-600' }}">
+            {{ $twoFactor ? '2FA On' : '2FA Off' }}
+          </span>
+        </div>
+        <div class="text-xs text-slate-500">Registered: {{ optional($u->created_at)->diffForHumans() ?? '—' }}</div>
+        <div class="text-xs text-slate-500">Updated: {{ optional($u->updated_at)->diffForHumans() ?? '—' }}</div>
+        <form method="POST" action="{{ route('admin.customers.toggle', $u->id) }}">
+          @csrf
+          <button type="submit"
+                  class="mt-2 w-full px-3 py-1 rounded-lg text-xs font-medium 
+                  {{ ($u->status ?? 'active') === 'active' 
+                      ? 'bg-rose-600 text-white hover:bg-rose-700' 
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700' }}">
+            {{ ($u->status ?? 'active') === 'active' ? 'Block' : 'Unblock' }}
+          </button>
+        </form>
+      </div>
+    @empty
+      <p class="text-slate-500 text-sm">No users found.</p>
+    @endforelse
   </div>
 </div>
