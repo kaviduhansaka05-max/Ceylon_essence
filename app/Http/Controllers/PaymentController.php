@@ -151,7 +151,7 @@ class PaymentController extends Controller
             }
 
             // Mark order as completed (or paid) and save address
-            $order->status   = 'paid';
+            $order->status   = 'pending';
             $order->location = (string) $request->input('address', '');
             $order->save();
 
