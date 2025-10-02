@@ -179,4 +179,25 @@ class PaymentController extends Controller
         return redirect()->route('order.thanks', (string) $order->_id)
                          ->with('success', 'Payment successful for cart checkout!');
     }
+
+    protected function decrementInventory(string $productId, int $qty): void
+{
+    try {
+        $qty = max(0, (int) $qty);
+        if ($qty <= 0) return;
+
+        $col = DB::connection('mongodb')->getMongoDB()->selectCollection('products');
+
+        $filter = preg_match('/^[a-f0-9]{24}$/i', $productId)
+            ? ['_id' => new ObjectId($productId)]
+            : ['_id' => $productId];
+
+        $col->updateOne($filter, [
+            '$inc' => ['inventory' => -$qty]
+        ]);
+    } catch (\Throwable $e) {
+        // optionally log error
+    }
+}
+
 }
