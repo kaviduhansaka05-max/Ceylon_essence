@@ -54,6 +54,35 @@ class PaymentController extends Controller
         }
     }
 
+    /** Atomic decrement of inventory in Mongo products. */
+    protected function decrementInventory(string $productId, int $qty): void
+    {
+        try {
+            $qty = max(0, (int) $qty);
+            if ($qty <= 0) return;
+
+            $col = DB::connection('mongodb')->getMongoDB()->selectCollection('products');
+
+            $filter = preg_match('/^[a-f0-9]{24}$/i', $productId)
+                ? ['_id' => new ObjectId($productId)]
+                : ['_id' => $productId];
+
+            // Don’t allow negatives; only decrement if enough stock
+            $col->updateOne(
+                array_merge($filter, ['inventory' => ['$gte' => $qty]]),
+                ['$inc' => ['inventory' => -$qty]]
+            );
+
+            // If now <=0, mark as Out of Stock
+            $col->updateOne(
+                array_merge($filter, ['inventory' => ['$lte' => 0]]),
+                ['$set' => ['inventory' => 0, 'status' => 'Out of Stock']]
+            );
+        } catch (\Throwable $e) {
+            // Optional log
+        }
+    }
+
     /** Recompute totals from the normalized items view (no mutation of items). */
     protected function recomputeTotals(MongoCart $cart): void
     {
@@ -89,7 +118,7 @@ class PaymentController extends Controller
 
         // Default: checkout using cart
         $userId = (string) Auth::id();
-        $cart   = $this->findOpenCartForUser($userId); // <<< no protected call
+        $cart   = $this->findOpenCartForUser($userId);
 
         return view('checkout', [
             'cart' => $cart, // can be null; the Blade handles it
@@ -165,7 +194,13 @@ class PaymentController extends Controller
                 'total'      => (float)  data_get($ci, 'total', 0),
             ]));
 
+            // ✅ Update product stats
             $this->incrementSoldPieces(
+                (string) data_get($ci, 'product_id'),
+                (int)    data_get($ci, 'quantity', 0)
+            );
+
+            $this->decrementInventory(
                 (string) data_get($ci, 'product_id'),
                 (int)    data_get($ci, 'quantity', 0)
             );
@@ -179,25 +214,4 @@ class PaymentController extends Controller
         return redirect()->route('order.thanks', (string) $order->_id)
                          ->with('success', 'Payment successful for cart checkout!');
     }
-
-    protected function decrementInventory(string $productId, int $qty): void
-{
-    try {
-        $qty = max(0, (int) $qty);
-        if ($qty <= 0) return;
-
-        $col = DB::connection('mongodb')->getMongoDB()->selectCollection('products');
-
-        $filter = preg_match('/^[a-f0-9]{24}$/i', $productId)
-            ? ['_id' => new ObjectId($productId)]
-            : ['_id' => $productId];
-
-        $col->updateOne($filter, [
-            '$inc' => ['inventory' => -$qty]
-        ]);
-    } catch (\Throwable $e) {
-        // optionally log error
-    }
-}
-
 }
