@@ -20,69 +20,109 @@
     </div>
   </div>
 
-  {{-- Table --}}
-  <div class="bg-white rounded-2xl shadow ring-1 ring-black/5 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full table-auto">
-        <thead class="bg-slate-50 text-slate-600 text-sm">
-          <tr>
-            <th class="px-4 py-3 text-left w-14">Image</th>
-            <th class="px-4 py-3 text-left">Name</th>
-            <th class="px-4 py-3 text-left">Category</th>
-            <th class="px-4 py-3 text-left">Description</th>
-            <th class="px-4 py-3 text-left">Size</th>
-            <th class="px-4 py-3 text-left">Inventory</th>
-            <th class="px-4 py-3 text-left">Price</th>
-            <th class="px-4 py-3 text-left">Status</th>
-            <th class="px-4 py-3 text-left w-24">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 text-sm text-slate-800">
-          @forelse($products as $p)
-            @php
-              $raw = $p->image ?? null;
-              if ($raw) {
-                $img = \Illuminate\Support\Str::startsWith($raw, 'data:image')
-                    ? $raw
-                    : 'data:image/png;base64,' . $raw;
-              } else {
-                $img = 'https://placehold.co/64x64/png';
-              }
-            @endphp
-            <tr class="hover:bg-slate-50/60">
-              <td class="px-4 py-2">
-                <img src="{{ $img }}" alt="{{ $p->name }}"
-                     class="h-10 w-10 rounded object-cover ring-1 ring-slate-200">
-              </td>
-              <td class="px-4 py-3 font-medium">{{ $p->name }}</td>
-              <td class="px-4 py-3">{{ $p->category }}</td>
-              <td class="px-4 py-3 max-w-[420px] truncate" title="{{ $p->description }}">{{ $p->description }}</td>
-              <td class="px-4 py-3">{{ $p->size }}</td>
-              <td class="px-4 py-3">{{ $p->inventory }}</td>
-              <td class="px-4 py-3">${{ number_format((float) $p->price, 2) }}</td>
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                  {{ strtolower($p->status) === 'instock'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-rose-100 text-rose-700' }}">
-                  {{ $p->status }}
-                </span>
-              </td>
-              <td class="px-4 py-3">
-                <a href="{{ route('admin.products.edit', (string) $p->_id) }}"
-                   class="text-indigo-700 hover:text-indigo-900 underline">Edit</a>
-              </td>
-            </tr>
-          @empty
+  {{-- Delete Selected Button --}}
+  <form method="POST" action="{{ route('admin.products.bulk-destroy') }}">
+    @csrf
+    @method('DELETE')
+
+    <div class="mb-3">
+      <button type="submit"
+        onclick="return confirm('Are you sure you want to delete selected products?')"
+        class="px-4 py-2 bg-rose-600 text-white rounded-full hover:bg-rose-500">
+        Delete Selected
+      </button>
+    </div>
+
+    {{-- Table --}}
+    <div class="bg-white rounded-2xl shadow ring-1 ring-black/5 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-auto">
+          <thead class="bg-slate-50 text-slate-600 text-sm">
             <tr>
-              <td class="px-4 py-8 text-slate-500" colspan="9">No products yet.</td>
+              {{-- ✅ Select All checkbox --}}
+              <th class="px-4 py-3 text-left w-10">
+                <input type="checkbox" id="select-all">
+              </th>
+              <th class="px-4 py-3 text-left w-14">Image</th>
+              <th class="px-4 py-3 text-left">Name</th>
+              <th class="px-4 py-3 text-left">Category</th>
+              <th class="px-4 py-3 text-left">Description</th>
+              <th class="px-4 py-3 text-left">Size</th>
+              <th class="px-4 py-3 text-left">Inventory</th>
+              <th class="px-4 py-3 text-left">Price</th>
+              <th class="px-4 py-3 text-left">Status</th>
+              <th class="px-4 py-3 text-left w-24">Actions</th>
             </tr>
-          @endforelse
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-sm text-slate-800">
+            @forelse($products as $p)
+              @php
+                $raw = $p->image ?? null;
+                if ($raw) {
+                  $img = \Illuminate\Support\Str::startsWith($raw, 'data:image')
+                      ? $raw
+                      : 'data:image/png;base64,' . $raw;
+                } else {
+                  $img = 'https://placehold.co/64x64/png';
+                }
+              @endphp
+              <tr class="hover:bg-slate-50/60">
+                {{-- ✅ Row checkbox --}}
+                <td class="px-4 py-2">
+                  <input type="checkbox" name="ids[]" value="{{ $p->_id }}" class="product-checkbox">
+                </td>
+                <td class="px-4 py-2">
+                  <img src="{{ $img }}" alt="{{ $p->name }}"
+                       class="h-10 w-10 rounded object-cover ring-1 ring-slate-200">
+                </td>
+                <td class="px-4 py-3 font-medium">{{ $p->name }}</td>
+                <td class="px-4 py-3">{{ $p->category }}</td>
+                <td class="px-4 py-3 max-w-[420px] truncate" title="{{ $p->description }}">{{ $p->description }}</td>
+                <td class="px-4 py-3">{{ $p->size }}</td>
+                <td class="px-4 py-3">{{ $p->inventory }}</td>
+                <td class="px-4 py-3">${{ number_format((float) $p->price, 2) }}</td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                    {{ strtolower($p->status) === 'instock'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-rose-100 text-rose-700' }}">
+                    {{ $p->status }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 flex gap-2">
+                  <a href="{{ route('admin.products.edit', (string) $p->_id) }}"
+                     class="text-indigo-700 hover:text-indigo-900 underline">Edit</a>
+                  {{-- Optional: Single Delete --}}
+                  <form method="POST" action="{{ route('admin.products.bulk-destroy') }}" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="ids[]" value="{{ $p->_id }}">
+                    <button type="submit"
+                            onclick="return confirm('Delete this product?')"
+                            class="text-rose-600 hover:text-rose-800 underline">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td class="px-4 py-8 text-slate-500" colspan="10">No products yet.</td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+      <div class="px-4 py-3">
+        {{ $products->links() }}
+      </div>
     </div>
-    <div class="px-4 py-3">
-      {{ $products->links() }}
-    </div>
-  </div>
+  </form>
 </div>
+
+{{-- Select All JS --}}
+<script>
+  document.getElementById('select-all').addEventListener('change', function(e) {
+    document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = e.target.checked);
+  });
+</script>
