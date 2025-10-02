@@ -50,45 +50,48 @@ class ProductController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            '_id'         => ['nullable','regex:/^[a-f0-9]{24}$/i'],
-            'name'        => ['required','string','max:255'],
-            'category'    => ['required','string','max:255'],
-            'description' => ['nullable','string','max:2000'],
-            'size'        => ['nullable','string','max:100'],
-            'inventory'   => ['required','integer','min:0'],
-            'price'       => ['required','numeric','min:0'],
-            'status'      => ['required','in:Instock,Out of Stock'],
-            'sold_pieces' => ['required','integer','min:0'],
+{
+    $data = $request->validate([
+        '_id'         => ['nullable','regex:/^[a-f0-9]{24}$/i'],
+        'name'        => ['required','string','max:255'],
+        'category'    => ['required','string','max:255'],
+        'description' => ['nullable','string','max:2000'],
+        'size'        => ['nullable','string','max:100'],
+        'inventory'   => ['required','integer','min:0'],
+        'price'       => ['required','numeric','min:0'],
+        'sold_pieces' => ['required','integer','min:0'],
 
-            // For WEB: image via path or file
-            'image_path'  => ['nullable','string','max:1024','required_without:image_file'],
-            'image_file'  => ['nullable','file','mimes:jpg,jpeg,png,webp,gif','max:5120'],
-        ]);
+        // For WEB: image via path or file
+        'image_path'  => ['nullable','string','max:1024','required_without:image_file'],
+        'image_file'  => ['nullable','file','mimes:jpg,jpeg,png,webp,gif','max:5120'],
+    ]);
 
-        $imageB64 = $this->resolveImageBase64FromWeb($request, $data);
+    $imageB64 = $this->resolveImageBase64FromWeb($request, $data);
 
-        $id  = $data['_id'] ?? (string) new ObjectId();
-        $now = Carbon::now();
+    $id  = $data['_id'] ?? (string) new ObjectId();
+    $now = Carbon::now();
 
-        MongoProduct::create([
-            '_id'         => $id,
-            'name'        => $data['name'],
-            'category'    => $data['category'],
-            'description' => $data['description'] ?? null,
-            'size'        => $data['size'] ?? null,
-            'inventory'   => (int) $data['inventory'],
-            'price'       => (float) $data['price'],
-            'status'      => $data['status'],
-            'sold_pieces' => (int) $data['sold_pieces'],
-            'image'       => $imageB64,
-            'created_at'  => $now,
-            'updated_at'  => $now,
-        ]);
+    // ✅ auto-status
+    $status = $data['inventory'] > 0 ? 'Instock' : 'Out of Stock';
 
-        return redirect()->route('admin.products.index')->with('success', 'Product created.');
-    }
+    MongoProduct::create([
+        '_id'         => $id,
+        'name'        => $data['name'],
+        'category'    => $data['category'],
+        'description' => $data['description'] ?? null,
+        'size'        => $data['size'] ?? null,
+        'inventory'   => (int) $data['inventory'],
+        'price'       => (float) $data['price'],
+        'status'      => $status,   // ✅ use auto status
+        'sold_pieces' => (int) $data['sold_pieces'],
+        'image'       => $imageB64,
+        'created_at'  => $now,
+        'updated_at'  => $now,
+    ]);
+
+    return redirect()->route('admin.products.index')->with('success', 'Product created.');
+}
+
 
     public function bulkDestroy(Request $request)
     {
