@@ -145,56 +145,61 @@ class ProductController extends Controller
         return $this->updateproduct($request, $id);
     }
 
-    public function updateproduct(Request $request, string $id)
-    {
-        $data = $request->validate([
-            'name'        => ['sometimes','required','string','max:255'],
-            'category'    => ['sometimes','required','string','max:255'],
-            'description' => ['sometimes','nullable','string','max:2000'],
-            'size'        => ['sometimes','nullable','string','max:100'],
-            'inventory'   => ['sometimes','required','integer','min:0'],
-            'price'       => ['sometimes','required','numeric','min:0'],
-            'status'      => ['sometimes','required','in:Instock,Out of Stock'],
-            'sold_pieces' => ['sometimes','required','integer','min:0'],
+  public function updateproduct(Request $request, string $id)
+{
+    $data = $request->validate([
+        'name'        => ['sometimes','required','string','max:255'],
+        'category'    => ['sometimes','required','string','max:255'],
+        'description' => ['sometimes','nullable','string','max:2000'],
+        'size'        => ['sometimes','nullable','string','max:100'],
+        'inventory'   => ['sometimes','required','integer','min:0'],
+        'price'       => ['sometimes','required','numeric','min:0'],
+        'sold_pieces' => ['sometimes','required','integer','min:0'],
 
-            // WEB uploads
-            'image_path'  => ['nullable','string','max:1024'],
-            'image_file'  => ['nullable','file','mimes:jpg,jpeg,png,webp,gif','max:5120'],
-        ]);
+        // WEB uploads
+        'image_path'  => ['nullable','string','max:1024'],
+        'image_file'  => ['nullable','file','mimes:jpg,jpeg,png,webp,gif','max:5120'],
+    ]);
 
-        $update = [];
-        foreach (['name','category','description','size','inventory','price','status','sold_pieces'] as $f) {
-            if (array_key_exists($f, $data)) {
-                if (in_array($f, ['inventory','sold_pieces'])) {
-                    $update[$f] = (int) $data[$f];
-                } elseif ($f === 'price') {
-                    $update[$f] = (float) $data[$f];
-                } else {
-                    $update[$f] = $data[$f];
-                }
+    $update = [];
+
+    foreach (['name','category','description','size','inventory','price','sold_pieces'] as $f) {
+        if (array_key_exists($f, $data)) {
+            if (in_array($f, ['inventory','sold_pieces'])) {
+                $update[$f] = (int) $data[$f];
+            } elseif ($f === 'price') {
+                $update[$f] = (float) $data[$f];
+            } else {
+                $update[$f] = $data[$f];
             }
         }
-
-        // image (optional)
-        $imageB64 = $this->resolveImageBase64FromWeb($request, $data, true);
-        if ($imageB64 !== null) {
-            $update['image'] = $imageB64;
-        }
-
-        $update['updated_at'] = Carbon::now();
-
-        $updated = MongoProduct::where('_id', $id)->update($update);
-
-        if (!$updated && preg_match('/^[a-f0-9]{24}$/i', $id)) {
-            $res = DB::connection('mongodb')->getMongoDB()
-                ->selectCollection('products')
-                ->updateOne(['_id' => new ObjectId($id)], ['$set' => $update]);
-            $updated = $res->getModifiedCount();
-        }
-
-        return redirect()->route('admin.products.index')
-            ->with('success', $updated ? 'Product updated.' : 'No changes were made.');
     }
+
+    // ✅ Auto update status if inventory is provided
+    if (array_key_exists('inventory', $data)) {
+        $update['status'] = $update['inventory'] > 0 ? 'Instock' : 'Out of Stock';
+    }
+
+    // image (optional)
+    $imageB64 = $this->resolveImageBase64FromWeb($request, $data, true);
+    if ($imageB64 !== null) {
+        $update['image'] = $imageB64;
+    }
+
+    $update['updated_at'] = Carbon::now();
+
+    $updated = MongoProduct::where('_id', $id)->update($update);
+
+    if (!$updated && preg_match('/^[a-f0-9]{24}$/i', $id)) {
+        $res = DB::connection('mongodb')->getMongoDB()
+            ->selectCollection('products')
+            ->updateOne(['_id' => new ObjectId($id)], ['$set' => $update]);
+        $updated = $res->getModifiedCount();
+    }
+
+    return redirect()->route('admin.products.index')
+        ->with('success', $updated ? 'Product updated.' : 'No changes were made.');
+}
 
     // ----------------------------
     // API (JSON) methods (NEW)
