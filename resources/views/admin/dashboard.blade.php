@@ -42,7 +42,6 @@
   ];
 @endphp
 
-
       @foreach ($kpis as $k)
         <div class="rounded-2xl bg-white/90 backdrop-blur shadow-sm ring-1 ring-gray-100 p-5">
           <div class="flex items-center gap-3 text-gray-500">
@@ -87,6 +86,7 @@
 
     {{-- Top products / Recent orders / Low stock --}}
     <section class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      {{-- Top Products --}}
       <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Top Products (30d)</h3>
         <table class="min-w-full text-sm">
@@ -107,6 +107,7 @@
         </table>
       </div>
 
+      {{-- Recent Orders --}}
       <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Recent Orders</h3>
         <div class="space-y-3">
@@ -124,6 +125,7 @@
         </div>
       </div>
 
+      {{-- Low Stock --}}
       <div class="rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 p-6">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Low Stock</h3>
         <table class="min-w-full text-sm">
@@ -151,7 +153,7 @@
         <p class="text-xs text-gray-500">Generate & save a one-off code, then share.</p>
       </div>
 
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <label class="block text-xs text-gray-600 mb-1">Type</label>
           <select id="promoType" class="w-full rounded-lg border-gray-300">
@@ -162,10 +164,6 @@
         <div>
           <label class="block text-xs text-gray-600 mb-1">Amount</label>
           <input id="promoAmount" type="number" min="1" class="w-full rounded-lg border-gray-300" placeholder="e.g. 20">
-        </div>
-        <div>
-          <label class="block text-xs text-gray-600 mb-1">Min Order (optional)</label>
-          <input id="promoMin" type="number" min="0" class="w-full rounded-lg border-gray-300" placeholder="e.g. 50">
         </div>
         <div>
           <label class="block text-xs text-gray-600 mb-1">Expires</label>
@@ -200,7 +198,7 @@
   {{-- Chart.js + Promo Script --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Revenue chart (unchanged)
+    // Revenue chart
     (function(){
       const el = document.getElementById('rev30');
       if (!el) return;
@@ -215,14 +213,13 @@
       });
     })();
 
-    // Promo save → /api/promos (with CSRF token + graceful fallback)
+    // Promo script
     (function(){
       const API_PROMO_URL = '{{ url('/api/promos') }}';
       const $ = (id) => document.getElementById(id);
       const genBtn = $('promoGenBtn'); const saveBtn = $('promoSaveBtn');
       if (!genBtn) return;
 
-      // get CSRF token
       const tokenMeta = document.querySelector('meta[name="csrf-token"]');
       const token = tokenMeta ? tokenMeta.getAttribute('content') : null;
 
@@ -234,7 +231,6 @@
       genBtn.addEventListener('click', () => {
         const type   = $('promoType').value;
         const amount = Math.max(1, parseInt($('promoAmount').value || 0, 10));
-        const min    = parseFloat($('promoMin').value || 0);
         const expiry = $('promoExpiry').value || null;
 
         const prefix = type === 'percent' ? 'CEY' : 'CEY$';
@@ -243,16 +239,15 @@
 
         const site    = "{{ url('/') }}";
         const offText = type === 'percent' ? `${amount}% off` : `$${amount} off`;
-        const minText = min > 0 ? ` (min $${min})` : '';
         const expText = expiry ? `\nValid until ${expiry}.` : '';
-        const msg     = `✨ Limited Time: ${offText}${minText} at Ceylon Essence! Use code ${code} at checkout.\nShop now: ${site}/products${expText}`;
+        const msg     = `✨ Limited Time: ${offText} at Ceylon Essence! Use code ${code} at checkout.\nShop now: ${site}/products${expText}`;
 
         $('promoCode').textContent = code;
         $('promoMsg').value = msg;
         $('promoResult').classList.remove('hidden');
         $('promoSavedBadge').classList.add('hidden');
 
-        generated = { code, type, amount, min, expires_at: expiry, active: true };
+        generated = { code, type, amount, expires_at: expiry, active: true };
         saveBtn.disabled = false; saveBtn.textContent = 'Save';
       });
 
@@ -287,45 +282,37 @@
         }
       });
 
- $('promoCopy')?.addEventListener('click', () => {
-  try {
-    const code = $('promoCode').textContent.trim();
-    if (!code) {
-      alert("No promo code generated yet.");
-      return;
-    }
-
-    if (navigator.clipboard && window.isSecureContext) {
-      // Works on HTTPS / localhost
-      navigator.clipboard.writeText(code).then(() => {
-        showCopied();
-      }).catch(() => {
-        fallbackCopy(code);
+      $('promoCopy')?.addEventListener('click', () => {
+        try {
+          const code = $('promoCode').textContent.trim();
+          if (!code) {
+            alert("No promo code generated yet.");
+            return;
+          }
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(code).then(() => { showCopied(); }).catch(() => { fallbackCopy(code); });
+          } else {
+            fallbackCopy(code);
+          }
+          function fallbackCopy(text) {
+            const temp = document.createElement("textarea");
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+            showCopied();
+          }
+          function showCopied() {
+            const b = $('promoCopy');
+            b.textContent = 'Copied!';
+            setTimeout(() => b.textContent = 'Copy', 1200);
+          }
+        } catch (e) {
+          alert('Copy failed. Try manually.');
+        }
       });
-    } else {
-      // Fallback for HTTP
-      fallbackCopy(code);
-    }
 
-    function fallbackCopy(text) {
-      const temp = document.createElement("textarea");
-      temp.value = text;
-      document.body.appendChild(temp);
-      temp.select();
-      document.execCommand("copy");
-      document.body.removeChild(temp);
-      showCopied();
-    }
-
-    function showCopied() {
-      const b = $('promoCopy');
-      b.textContent = 'Copied!';
-      setTimeout(() => b.textContent = 'Copy', 1200);
-    }
-  } catch (e) {
-    alert('Copy failed. Try manually.');
-  }
-});
       $('promoShare')?.addEventListener('click', async () => {
         const text = $('promoMsg').value;
         if (navigator.share) { 
