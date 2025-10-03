@@ -164,6 +164,10 @@
           <input id="promoAmount" type="number" min="1" class="w-full rounded-lg border-gray-300" placeholder="e.g. 20">
         </div>
         <div>
+          <label class="block text-xs text-gray-600 mb-1">Min Order (optional)</label>
+          <input id="promoMin" type="number" min="0" class="w-full rounded-lg border-gray-300" placeholder="e.g. 50">
+        </div>
+        <div>
           <label class="block text-xs text-gray-600 mb-1">Expires</label>
           <input id="promoExpiry" type="date" class="w-full rounded-lg border-gray-300">
         </div>
