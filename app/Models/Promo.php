@@ -14,4 +14,9 @@ class Promo extends Model
         'active'     => 'boolean',
         'expires_at' => 'datetime',
     ];
+
+     public function orders()
+    {
+        return $this->hasMany(Order::class, 'promo_id');
+    }
 }

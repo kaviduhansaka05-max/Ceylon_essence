@@ -26,6 +26,10 @@ class Order extends Model
         return $this->hasMany(OrderItem::class, 'order_id', 'OrderID');
     }
 
+       public function promo()
+    {
+        return $this->belongsTo(Promo::class, 'promo_id');
+    }
     // An order has many products through order items
     public function products()
     {
