@@ -24,6 +24,10 @@ class JetstreamServiceProvider extends ServiceProvider
     {
         $this->configurePermissions();
 
+        // ✅ Tell Jetstream which user model handles authentication and 2FA
+        Jetstream::useUserModel(\App\Models\User::class);
+
+        // Handles account deletion through Jetstream
         Jetstream::deleteUsersUsing(DeleteUser::class);
 
         Vite::prefetch(concurrency: 3);
