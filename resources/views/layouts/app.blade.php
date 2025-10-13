@@ -22,7 +22,6 @@
 
     <div class="min-h-screen bg-gray-100">
         @livewire('navigation-menu')
-
         <!-- Page Heading -->
         @if (isset($header))
             <header class="bg-white shadow">
@@ -37,21 +36,21 @@
             {{ $slot }}
         </main>
 
-        {{-- ✅ Global footer --}}
+        {{--  Global footer --}}
         @include('layouts.footer')
     </div>
 
     @stack('modals')
 
-    {{-- ✅ Livewire scripts --}}
+    {{--  Livewire scripts --}}
     @livewireScripts
 
-    {{-- ✅ Force load Livewire assets in case vite misses them --}}
+    {{--  Force load Livewire assets in case vite misses them --}}
     <script src="{{ asset('vendor/livewire/livewire.js') }}" 
             data-turbo-eval="false" 
             data-turbolinks-eval="false"></script>
 
-    {{-- ✅ Alpine.js (needed for dropdowns, Jetstream menus, filters) --}}
+    {{--  Alpine.js (needed for dropdowns, Jetstream menus, filters) --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>
