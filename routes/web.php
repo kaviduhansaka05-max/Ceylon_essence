@@ -89,7 +89,7 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
-});
+});// Unauthenticated visitors are redirected to the login page automatically.” 
 
 // -------------------------------
 // Admin dashboard + management

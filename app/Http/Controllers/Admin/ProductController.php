@@ -7,7 +7,7 @@ use App\Models\MongoProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\ObjectId;
-use MongoDB\BSON\Regex;          // make sure this is present
+use MongoDB\BSON\Regex;          
 use Carbon\Carbon;
 
 class ProductController extends Controller
@@ -71,7 +71,7 @@ class ProductController extends Controller
     $id  = $data['_id'] ?? (string) new ObjectId();
     $now = Carbon::now();
 
-    // ✅ auto-status
+    //  auto-status
     $status = $data['inventory'] > 0 ? 'Instock' : 'Out of Stock';
 
     MongoProduct::create([

@@ -9,26 +9,26 @@ class Admin extends Authenticatable
 {
     use Notifiable;
 
-    protected $guard = 'admin';
-
+    protected $guard = 'admin'; // Defines a separate guard for Admin authentication.
+    // It ensures admins log in through their own secure channel,
     protected $fillable = [
         'name', 'email', 'password', 'user_type'
     ];
-
+    // $fillable protects the model from **mass assignment vulnerabilities.
     protected $hidden = [
         'password', 'remember_token',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed', // Laravel 10+ automatically hashes
+        'password' => 'hashed', 
     ];
 
      // An admin can create many products
     public function products()
     {
         return $this->hasMany(Product::class, 'created_by'); 
-        //  products table has a created_by column (admin_id)
+        // products table has a created_by column (admin_id)
     }
 
     // An admin can manage many orders
