@@ -11,18 +11,20 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
+    <!-- Vite (CSS + JS build) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Styles -->
+    <!-- Livewire Styles -->
     @livewireStyles
 </head>
 <body class="font-sans antialiased">
     <x-banner />
 
     <div class="min-h-screen bg-gray-100">
+        {{-- ✅ Navigation Menu --}}
         @livewire('navigation-menu')
-        <!-- Page Heading -->
+
+        {{-- ✅ Page Header --}}
         @if (isset($header))
             <header class="bg-white shadow">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -31,26 +33,21 @@
             </header>
         @endif
 
-        <!-- Page Content -->
+        {{-- ✅ Main Page Content --}}
         <main>
             {{ $slot }}
         </main>
 
-        {{--  Global footer --}}
+        {{-- ✅ Global Footer --}}
         @include('layouts.footer')
     </div>
 
     @stack('modals')
 
-    {{--  Livewire scripts --}}
+    {{-- ✅ Load Livewire scripts (only once!) --}}
     @livewireScripts
 
-    {{--  Force load Livewire assets in case vite misses them --}}
-    <script src="{{ asset('vendor/livewire/livewire.js') }}" 
-            data-turbo-eval="false" 
-            data-turbolinks-eval="false"></script>
-
-    {{--  Alpine.js (needed for dropdowns, Jetstream menus, filters) --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- ✅ DO NOT include extra Livewire or Alpine JS from CDN here --}}
+    {{-- Jetstream and Vite already load everything correctly --}}
 </body>
 </html>
